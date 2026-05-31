@@ -1,7 +1,6 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 import { z } from "zod"
 import { getDb } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
@@ -43,12 +42,6 @@ export async function atualizarTrabalhador(id: string, formData: FormData): Prom
     WHERE id = ${id}
   `
 
-  await db`
-    UPDATE dias_trabalhados
-    SET valor_dia = CASE WHEN tipo = 'meio' THEN ${parsed.data.valor_diaria} / 2 ELSE ${parsed.data.valor_diaria} END
-    WHERE trabalhador_id = ${id}
-  `
-
   logAudit("atualizar_trabalhador", `ID: ${id}, Nome: ${parsed.data.nome}`)
   revalidatePath("/trabalhadores")
   revalidatePath(`/trabalhadores/${id}`)
@@ -74,16 +67,27 @@ export async function toggleAtivoTrabalhador(id: string, ativo: boolean): Promis
   return { success: true }
 }
 
-export async function deletarTrabalhador(id: string) {
+export async function deletarTrabalhador(id: string): Promise<ActionResult> {
   await requireAuth()
   const idOk = uuidSchema.safeParse(id)
-  if (!idOk.success) return
+  if (!idOk.success) return { success: false, error: "ID inválido" }
   const db = await getDb()
   await db`DELETE FROM trabalhadores WHERE id = ${id}`
   logAudit("deletar_trabalhador", `ID: ${id}`)
   revalidatePath("/trabalhadores")
   revalidatePath("/")
-  redirect("/trabalhadores")
+  return { success: true, redirectTo: "/trabalhadores" }
+}
+
+export async function deletarTrabalhadores(ids: string[]): Promise<ActionResult> {
+  await requireAuth()
+  if (ids.length === 0) return { success: false, error: "Nenhum trabalhador selecionado" }
+  const db = await getDb()
+  await db`DELETE FROM trabalhadores WHERE id = ANY(${ids})`
+  logAudit("deletar_trabalhadores", `${ids.length} trabalhadores`)
+  revalidatePath("/trabalhadores")
+  revalidatePath("/")
+  return { success: true }
 }
 
 export async function listarTrabalhadores() {

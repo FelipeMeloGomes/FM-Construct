@@ -35,15 +35,27 @@ export async function criarDespesa(formData: FormData): Promise<ActionResult> {
 
 const uuidSchema = z.string().uuid()
 
-export async function deletarDespesa(id: string) {
+export async function deletarDespesa(id: string): Promise<ActionResult> {
   await requireAuth()
   const idOk = uuidSchema.safeParse(id)
-  if (!idOk.success) return
+  if (!idOk.success) return { success: false, error: "ID inválido" }
   const db = await getDb()
   await db`DELETE FROM despesas WHERE id = ${id}`
   logAudit("deletar_despesa", `ID: ${id}`)
   revalidatePath("/despesas")
   revalidatePath("/")
+  return { success: true }
+}
+
+export async function deletarDespesas(ids: string[]): Promise<ActionResult> {
+  await requireAuth()
+  if (ids.length === 0) return { success: false, error: "Nenhuma despesa selecionada" }
+  const db = await getDb()
+  await db`DELETE FROM despesas WHERE id = ANY(${ids})`
+  logAudit("deletar_despesas", `${ids.length} despesas`)
+  revalidatePath("/despesas")
+  revalidatePath("/")
+  return { success: true }
 }
 
 export async function atualizarDespesa(id: string, formData: FormData): Promise<ActionResult> {
