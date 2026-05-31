@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/layout/header"
 import { MobileNav } from "@/components/layout/mobile-nav"
 import { ThemeProvider } from "@/components/theme/theme-provider"
-import { PageAnimation } from "@/components/layout/page-animation"
 import "./globals.css"
 
 const sora = Sora({
@@ -66,9 +65,7 @@ export default function RootLayout({
           <Header />
           <main className="min-h-[calc(100vh-4rem)] pb-20 md:pb-6">
             <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
-              <PageAnimation>
-                {children}
-              </PageAnimation>
+              {children}
             </div>
           </main>
           <MobileNav />

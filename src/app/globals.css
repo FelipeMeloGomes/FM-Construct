@@ -4,28 +4,28 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.98 0.003 75);
-  --foreground: oklch(0.18 0.01 285);
-  --card: oklch(0.99 0.002 75);
-  --card-foreground: oklch(0.18 0.01 285);
-  --popover: oklch(0.99 0.002 75);
-  --popover-foreground: oklch(0.18 0.01 285);
-  --primary: oklch(0.72 0.19 70);
+  --background: oklch(0.97 0.01 68);
+  --foreground: oklch(0.16 0.012 285);
+  --card: oklch(0.992 0.004 60);
+  --card-foreground: oklch(0.16 0.012 285);
+  --popover: oklch(0.992 0.004 60);
+  --popover-foreground: oklch(0.16 0.012 285);
+  --primary: oklch(0.7 0.22 68);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.94 0.008 75);
-  --secondary-foreground: oklch(0.25 0.01 285);
-  --muted: oklch(0.94 0.008 75);
-  --muted-foreground: oklch(0.55 0.015 285);
-  --accent: oklch(0.94 0.008 75);
-  --accent-foreground: oklch(0.25 0.01 285);
+  --secondary: oklch(0.91 0.012 68);
+  --secondary-foreground: oklch(0.22 0.015 285);
+  --muted: oklch(0.93 0.01 66);
+  --muted-foreground: oklch(0.45 0.018 285);
+  --accent: oklch(0.91 0.012 68);
+  --accent-foreground: oklch(0.22 0.015 285);
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.88 0.008 75);
-  --input: oklch(0.88 0.008 75);
-  --ring: oklch(0.72 0.19 70);
+  --border: oklch(0.83 0.012 66);
+  --input: oklch(0.83 0.012 66);
+  --ring: oklch(0.7 0.22 68);
   --radius: 0.625rem;
-  --gradient-from: oklch(0.95 0.015 75);
-  --gradient-to: oklch(0.97 0.005 75);
+  --gradient-from: oklch(0.93 0.018 60);
+  --gradient-to: oklch(0.96 0.01 66);
 }
 
 .dark {
@@ -85,6 +85,15 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.72 0.19 70 / 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 80% 90%, oklch(0.72 0.19 70 / 0.03) 0%, transparent 50%);
+}
+
+.dark body {
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, oklch(0.76 0.19 70 / 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 80% 90%, oklch(0.76 0.19 70 / 0.04) 0%, transparent 50%);
 }
 
 /* ---- Animations ---- */
@@ -170,11 +179,12 @@ body {
 .card-hover:hover {
   transform: translateY(-2px);
   border-color: var(--primary);
-  box-shadow: 0 8px 30px oklch(0 0 0 / 0.08);
+  box-shadow: 0 4px 16px oklch(0.7 0.22 68 / 0.08), 0 8px 30px oklch(0 0 0 / 0.06);
 }
 
 .dark .card-hover:hover {
-  box-shadow: 0 8px 30px oklch(0 0 0 / 0.3);
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px oklch(0.76 0.19 70 / 0.08), 0 8px 30px oklch(0 0 0 / 0.3);
 }
 
 /* ---- Button glow variant ---- */
@@ -198,6 +208,14 @@ body {
   opacity: 0.3;
 }
 
+.light .btn-glow {
+  box-shadow: 0 2px 8px oklch(0.7 0.22 68 / 0.15);
+}
+
+.light .btn-glow:hover {
+  box-shadow: 0 4px 16px oklch(0.7 0.22 68 / 0.25);
+}
+
 /* ---- Scrollbar ---- */
 ::-webkit-scrollbar {
   width: 5px;
@@ -215,8 +233,12 @@ body {
 
 /* ---- Selection ---- */
 ::selection {
-  background: oklch(0.72 0.19 70 / 0.3);
+  background: oklch(0.7 0.22 68 / 0.25);
   color: var(--foreground);
+}
+
+.light ::selection {
+  background: oklch(0.7 0.22 68 / 0.2);
 }
 
 /* ---- View Transitions ---- */

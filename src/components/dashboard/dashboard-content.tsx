@@ -4,11 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { HardHat, DollarSign, Clock, TrendingUp, Calendar, Construction, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { DashboardCharts } from "@/components/dashboard/charts"
+import { MonthlyExportCard } from "@/components/dashboard/monthly-export-card"
 
 export async function DashboardContent() {
   const db = await getDb()
 
-  const [trabalhadores, dias, despesas, mesDias, mesDespesas, ultimosPagamentos] = await Promise.all([
+  const [trabalhadores, dias, despesas, mesDias, mesDespesas, ultimosPagamentos, monthlyDias, monthlyDespesas, categoryChart] = await Promise.all([
     db`SELECT COUNT(*)::int as total FROM trabalhadores WHERE ativo = true`,
     db`
       SELECT
@@ -40,6 +42,31 @@ export async function DashboardContent() {
       ORDER BY d.data_pagamento DESC NULLS LAST
       LIMIT 5
     ` as unknown as { id: string; valor_pago: number; trabalhador_nome: string }[],
+    db`
+      SELECT
+        to_char(date_trunc('month', data), 'YYYY-MM') as mes,
+        COALESCE(SUM(COALESCE(valor_pago, 0))::decimal, 0) as total_pago,
+        COALESCE(SUM(valor_dia - COALESCE(valor_pago, 0))::decimal, 0) as total_pendente
+      FROM dias_trabalhados
+      WHERE data >= date_trunc('month', CURRENT_DATE) - interval '5 months'
+      GROUP BY date_trunc('month', data)
+      ORDER BY mes ASC
+    ` as unknown as { mes: string; total_pago: number; total_pendente: number }[],
+    db`
+      SELECT
+        to_char(date_trunc('month', data), 'YYYY-MM') as mes,
+        COALESCE(SUM(valor)::decimal, 0) as total
+      FROM despesas
+      WHERE data >= date_trunc('month', CURRENT_DATE) - interval '5 months'
+      GROUP BY date_trunc('month', data)
+      ORDER BY mes ASC
+    ` as unknown as { mes: string; total: number }[],
+    db`
+      SELECT categoria, COALESCE(SUM(valor)::decimal, 0) as total
+      FROM despesas
+      GROUP BY categoria
+      ORDER BY total DESC
+    ` as unknown as { categoria: string; total: number }[],
   ])
 
   const totalPago = Number(dias[0].total_pago)
@@ -113,7 +140,7 @@ export async function DashboardContent() {
         {cards.map((card, i) => {
           const Icon = card.icon
           return (
-            <Link key={card.title} href={card.href} className="stagger animate-fade-in-up delay-1">
+            <Link key={card.title} href={card.href} className="animate-fade-in-up delay-1">
               <Card className="card-hover group cursor-pointer border-primary/5">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -136,7 +163,7 @@ export async function DashboardContent() {
       </div>
 
       {custoTotal > 0 && (
-        <Link href="/relatorios" className="stagger animate-fade-in-up delay-2 block">
+        <Link href="/relatorios" className="animate-fade-in-up delay-2 block">
           <Card className="card-hover group cursor-pointer border-primary/20 bg-gradient-to-br from-background via-background to-primary/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Custo Total da Obra</CardTitle>
@@ -152,38 +179,16 @@ export async function DashboardContent() {
       )}
 
       {temMes && (
-        <div className="stagger animate-fade-in-up delay-3">
-          <Card className="border-primary/10">
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10">
-                  <Calendar className="size-3.5 text-primary" />
-                </div>
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Resumo do Mês — {nomeMesCapitalizado}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-3">
-                {[
-                  { label: "Pago em Trabalhadores", value: formatCurrency(mesPago), color: "text-emerald-500" },
-                  { label: "Pendente", value: formatCurrency(mesPendente), color: "text-red-500" },
-                  { label: "Despesas", value: formatCurrency(mesDespesasTotal), color: "text-blue-500" },
-                ].map((item) => (
-                  <div key={item.label} className="space-y-0.5">
-                    <p className="text-xs text-muted-foreground/70">{item.label}</p>
-                    <p className={`text-lg font-bold tracking-tight ${item.color}`}>{item.value}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <MonthlyExportCard
+          nomeMes={nomeMesCapitalizado}
+          pago={formatCurrency(mesPago)}
+          pendente={formatCurrency(mesPendente)}
+          despesas={formatCurrency(mesDespesasTotal)}
+        />
       )}
 
       {ultimosPagamentos.length > 0 && (
-        <div className="stagger animate-fade-in-up delay-4">
+        <div className="animate-fade-in-up delay-4">
           <Card className="border-primary/10">
             <CardHeader>
               <CardTitle className="text-sm font-medium text-muted-foreground">&Uacute;ltimos Pagamentos</CardTitle>
@@ -211,6 +216,21 @@ export async function DashboardContent() {
           </Card>
         </div>
       )}
+
+      <DashboardCharts
+        monthlyData={(() => {
+            const despesasMap = new Map(
+              (monthlyDespesas as { mes: string; total: number }[]).map((d) => [d.mes, Number(d.total)])
+            )
+            return (monthlyDias as { mes: string; total_pago: number; total_pendente: number }[]).map((d) => ({
+              mes: d.mes,
+              total_pago: Number(d.total_pago),
+              total_pendente: Number(d.total_pendente),
+              total_despesas: despesasMap.get(d.mes) ?? 0,
+            }))
+          })()}
+        categoryData={categoryChart as { categoria: string; total: number }[]}
+      />
     </div>
   )
 }

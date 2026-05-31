@@ -1,10 +1,25 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useTheme } from "./theme-provider"
 import { Sun, Moon } from "lucide-react"
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted) {
+    return (
+      <button
+        className="relative inline-flex size-9 items-center justify-center rounded-lg"
+        aria-label="Alternar tema"
+      >
+        <div className="size-4" />
+      </button>
+    )
+  }
 
   return (
     <button
