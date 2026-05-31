@@ -69,6 +69,12 @@ export default async function RelatoriosPage(props: {
 
   const exportParams = mesFiltro ? `&mes=${mesFiltro}` : ""
 
+  const anyData = (await db`
+    SELECT
+      EXISTS (SELECT 1 FROM trabalhadores) as has_trabalhadores,
+      EXISTS (SELECT 1 FROM despesas) as has_despesas
+  `)[0] as unknown as { has_trabalhadores: boolean; has_despesas: boolean }
+
   return (
     <DirectionalTransition>
     <div className="space-y-6">
@@ -76,6 +82,15 @@ export default async function RelatoriosPage(props: {
         <h1 className="text-2xl font-bold text-amber-400">Relatórios</h1>
         <p className="text-sm text-slate-400 mt-1">Exporte os dados da obra</p>
       </div>
+
+      {!anyData.has_trabalhadores && !anyData.has_despesas ? (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+          <FileText className="h-12 w-12 mb-4" />
+          <p className="text-lg font-medium">Nenhum dado cadastrado</p>
+          <p className="text-sm mt-1">Adicione trabalhadores ou despesas para gerar relatórios</p>
+        </div>
+      ) : (
+      <>
 
       <FiltroMes mesAtual={mesFiltro ?? ""} />
 
@@ -219,6 +234,8 @@ export default async function RelatoriosPage(props: {
           </CardContent>
         </Card>
       </div>
+      </>
+      )}
     </div>
     </DirectionalTransition>
   )
