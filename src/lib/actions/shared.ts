@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export type ActionResult =
-  | { success: true }
+  | { success: true; redirectTo?: string }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> }
 
 export function parseError(e: unknown): ActionResult {

@@ -88,6 +88,7 @@ export function RegistrarDiaDialog({ trabalhadorId, valorDiaria, trigger }: Regi
               </div>
 
               <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="cursor-pointer">Cancelar</Button>
                 <Button type="submit" className="cursor-pointer">Registrar</Button>
               </DialogFooter>
             </form>

@@ -76,6 +76,7 @@ export function RegistrarPagamentoDialog({ diaId, valorDevido }: RegistrarPagame
                 />
               </div>
               <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="cursor-pointer">Cancelar</Button>
                 <Button type="submit" className="cursor-pointer">Confirmar Pagamento</Button>
               </DialogFooter>
             </form>

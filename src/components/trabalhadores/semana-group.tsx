@@ -5,9 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import {
-  AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { RegistrarPagamentoDialog } from "@/components/trabalhadores/registrar-pagamento-dialog"
 import { EditarDiaDialog } from "@/components/trabalhadores/editar-dia-dialog"
 import { Trash2 } from "lucide-react"
@@ -53,27 +51,18 @@ export function SemanaGroup({
           Semana de {formatWeekRange(new Date(diasDaSemana[0].data))}
         </h4>
         {hasPendentes && (
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={<Button variant="default" size="sm" className="h-9 text-sm px-4 shadow-sm cursor-pointer">
-                Pagar Semana ({pendentes.length} pendente{pendentes.length > 1 ? "s" : ""})
-              </Button>}
-            />
-            <AlertDialogContent size="sm" className="top-1/2 left-1/2 bottom-auto -translate-x-1/2 -translate-y-1/2 rounded-xl">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Pagar semana?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Pagar {pendentes.length} dia{pendentes.length > 1 ? "s" : ""} no valor total de {formatCurrency(totalPendenteSemana)}?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <form action={pagarSemana.bind(null, trabalhadorId, pendentes.map((p) => p.id as string))}>
-                  <Button type="submit" variant="default" className="cursor-pointer">Sim, pagar</Button>
-                </form>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <ConfirmDialog
+            action={pagarSemana.bind(null, trabalhadorId, pendentes.map((p) => p.id as string))}
+            title="Pagar semana?"
+            description={`Pagar ${pendentes.length} dia${pendentes.length > 1 ? "s" : ""} no valor total de ${formatCurrency(totalPendenteSemana)}?`}
+            confirmText="Sim, pagar"
+            successMessage="Semana paga"
+            variant="default"
+          >
+            <Button variant="default" size="sm" className="h-9 text-sm px-4 shadow-sm cursor-pointer">
+              Pagar Semana ({pendentes.length} pendente{pendentes.length > 1 ? "s" : ""})
+            </Button>
+          </ConfirmDialog>
         )}
       </div>
       <Table>
@@ -115,27 +104,16 @@ export function SemanaGroup({
                     <RegistrarPagamentoDialog diaId={d.id} valorDevido={Number(d.valor_dia)} />
                   )}
                   <EditarDiaDialog dia={d} valorDiaria={valorDiaria} />
-                  <AlertDialog>
-                    <AlertDialogTrigger
-                      render={<Button variant="ghost" size="icon" className="size-9 sm:size-7 text-slate-500 hover:text-red-400 cursor-pointer" aria-label="Excluir dia">
-                        <Trash2 className="size-4 sm:size-3.5" />
-                      </Button>}
-                    />
-                    <AlertDialogContent className="top-1/2 left-1/2 bottom-auto -translate-x-1/2 -translate-y-1/2 rounded-xl">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir dia?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Remover {formatDate(d.data)} ({d.tipo === "inteiro" ? "Dia inteiro" : "Meio dia"})?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <form action={deletarDia.bind(null, d.id)}>
-                          <Button type="submit" variant="destructive" className="cursor-pointer">Sim, excluir</Button>
-                        </form>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <ConfirmDialog
+                    action={deletarDia.bind(null, d.id)}
+                    title="Excluir dia?"
+                    description={`Remover ${formatDate(d.data)} (${d.tipo === "inteiro" ? "Dia inteiro" : "Meio dia"})?`}
+                    successMessage="Dia excluído"
+                  >
+                    <Button variant="ghost" size="icon" className="size-9 sm:size-7 text-slate-500 hover:text-red-400 cursor-pointer" aria-label="Excluir dia">
+                      <Trash2 className="size-4 sm:size-3.5" />
+                    </Button>
+                  </ConfirmDialog>
                 </div>
               </TableCell>
             </TableRow>

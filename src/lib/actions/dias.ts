@@ -130,12 +130,12 @@ export async function atualizarDia(formData: FormData): Promise<ActionResult> {
 
 const uuidSchema = z.string().uuid()
 
-export async function pagarSemana(trabalhadorId: string, diaIds: string[]) {
+export async function pagarSemana(trabalhadorId: string, diaIds: string[]): Promise<ActionResult> {
   await requireAuth()
   const idOk = uuidSchema.safeParse(trabalhadorId)
-  if (!idOk.success) return
+  if (!idOk.success) return { success: false, error: "ID inválido" }
   const idsOk = z.array(uuidSchema).safeParse(diaIds)
-  if (!idsOk.success) return
+  if (!idsOk.success) return { success: false, error: "IDs inválidos" }
   const db = await getDb()
 
   await db`
@@ -147,23 +147,25 @@ export async function pagarSemana(trabalhadorId: string, diaIds: string[]) {
   logAudit("pagar_semana", `Trabalhador: ${trabalhadorId}, Dias: ${diaIds.length}`)
   revalidatePath(`/trabalhadores/${trabalhadorId}`)
   revalidatePath("/")
+  return { success: true }
 }
 
-export async function deletarDia(id: string) {
+export async function deletarDia(id: string): Promise<ActionResult> {
   await requireAuth()
   const idOk = uuidSchema.safeParse(id)
-  if (!idOk.success) return
+  if (!idOk.success) return { success: false, error: "ID inválido" }
   const db = await getDb()
   const dia = await db`
     SELECT trabalhador_id FROM dias_trabalhados WHERE id = ${id}
   `
-  if (!dia[0]) return
+  if (!dia[0]) return { success: false, error: "Registro não encontrado" }
 
   await db`DELETE FROM dias_trabalhados WHERE id = ${id}`
 
   logAudit("deletar_dia", `ID: ${id}`)
   revalidatePath(`/trabalhadores/${dia[0].trabalhador_id}`)
   revalidatePath("/")
+  return { success: true }
 }
 
 export async function listarDias(trabalhadorId: string) {

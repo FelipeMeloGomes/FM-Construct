@@ -121,6 +121,7 @@ export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
               )}
 
               <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="cursor-pointer">Cancelar</Button>
                 <Button type="submit" className="cursor-pointer">Salvar</Button>
               </DialogFooter>
             </form>
