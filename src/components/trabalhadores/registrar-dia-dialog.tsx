@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Plus } from "lucide-react"
+import { FieldErrors, getFieldErrors } from "@/components/ui/field-error"
 
 interface RegistrarDiaDialogProps {
   trabalhadorId: string
@@ -21,24 +22,27 @@ interface RegistrarDiaDialogProps {
 export function RegistrarDiaDialog({ trabalhadorId, valorDiaria, trigger }: RegistrarDiaDialogProps) {
   const [open, setOpen] = useState(false)
   const [tipo, setTipo] = useState<"inteiro" | "meio">("inteiro")
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>()
   const today = new Date().toLocaleDateString("en-CA")
   const valorCalculado = tipo === "inteiro" ? valorDiaria : valorDiaria / 2
 
   async function handleSubmit(formData: FormData) {
+    setFieldErrors(undefined)
     formData.set("trabalhador_id", trabalhadorId)
     formData.set("tipo", tipo)
-    try {
-      await registrarDia(formData)
-      toast.success("Dia registrado com sucesso!")
-      setOpen(false)
-    } catch {
-      toast.error("Erro ao registrar dia")
+    const result = await registrarDia(formData)
+    if (!result.success) {
+      if (result.fieldErrors) setFieldErrors(result.fieldErrors)
+      toast.error(result.error)
+      return
     }
+    toast.success("Dia registrado com sucesso!")
+    setOpen(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger ?? <Button size="sm">
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setFieldErrors(undefined) }}>
+      <DialogTrigger render={trigger ?? <Button size="sm" className="cursor-pointer">
         <Plus className="h-4 w-4 mr-2" />
         Registrar Dia
       </Button>} />
@@ -54,7 +58,8 @@ export function RegistrarDiaDialog({ trabalhadorId, valorDiaria, trigger }: Regi
             <form action={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="data">Data</Label>
-                <Input id="data" name="data" type="date" defaultValue={today} required />
+                <Input id="data" name="data" type="date" defaultValue={today} required aria-invalid={!!getFieldErrors("data", fieldErrors)} aria-describedby="data-error" />
+                <FieldErrors errors={getFieldErrors("data", fieldErrors)} />
               </div>
 
               <div className="space-y-2">
@@ -83,7 +88,7 @@ export function RegistrarDiaDialog({ trabalhadorId, valorDiaria, trigger }: Regi
               </div>
 
               <DialogFooter>
-                <Button type="submit">Registrar</Button>
+                <Button type="submit" className="cursor-pointer">Registrar</Button>
               </DialogFooter>
             </form>
           </>

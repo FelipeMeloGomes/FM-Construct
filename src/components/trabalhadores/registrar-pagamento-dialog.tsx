@@ -35,7 +35,7 @@ export function RegistrarPagamentoDialog({ diaId, valorDevido }: RegistrarPagame
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" className="size-9 sm:h-8 sm:w-auto sm:px-2 text-xs">
+      <DialogTrigger render={<Button variant="outline" size="sm" className="size-9 sm:h-8 sm:w-auto sm:px-2 text-xs cursor-pointer">
         <DollarSign className="size-4 sm:size-3 sm:mr-1" />
         <span className="hidden sm:inline">Pagar</span>
       </Button>} />
@@ -76,7 +76,7 @@ export function RegistrarPagamentoDialog({ diaId, valorDevido }: RegistrarPagame
                 />
               </div>
               <DialogFooter>
-                <Button type="submit">Confirmar Pagamento</Button>
+                <Button type="submit" className="cursor-pointer">Confirmar Pagamento</Button>
               </DialogFooter>
             </form>
           </>

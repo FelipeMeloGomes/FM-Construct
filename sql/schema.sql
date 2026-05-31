@@ -36,3 +36,14 @@ CREATE INDEX IF NOT EXISTS idx_dias_trabalhador ON dias_trabalhados(trabalhador_
 CREATE INDEX IF NOT EXISTS idx_dias_data ON dias_trabalhados(data);
 CREATE INDEX IF NOT EXISTS idx_despesas_data ON despesas(data);
 CREATE INDEX IF NOT EXISTS idx_despesas_categoria ON despesas(categoria);
+
+CREATE TABLE IF NOT EXISTS audit_log (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  acao VARCHAR(50) NOT NULL,
+  detalhes TEXT,
+  ip VARCHAR(45),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_log_acao ON audit_log(acao);

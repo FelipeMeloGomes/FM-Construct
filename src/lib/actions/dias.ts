@@ -3,6 +3,9 @@
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { getDb } from "@/lib/db"
+import { requireAuth } from "@/lib/auth"
+import { logAudit } from "@/lib/audit"
+import type { ActionResult } from "./shared"
 
 const registrarDiaSchema = z.object({
   trabalhador_id: z.string().uuid(),
@@ -11,25 +14,37 @@ const registrarDiaSchema = z.object({
   observacao: z.string().optional(),
 })
 
-export async function registrarDia(formData: FormData) {
-  const parsed = registrarDiaSchema.parse(Object.fromEntries(formData))
+export async function registrarDia(formData: FormData): Promise<ActionResult> {
+  await requireAuth()
+  const parsed = registrarDiaSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { success: false, error: "Verifique os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   const db = await getDb()
 
   const trabalhador = await db`
-    SELECT valor_diaria FROM trabalhadores WHERE id = ${parsed.trabalhador_id}
+    SELECT valor_diaria, nome FROM trabalhadores WHERE id = ${parsed.data.trabalhador_id}
   `
-  if (!trabalhador[0]) throw new Error("Trabalhador não encontrado")
+  if (!trabalhador[0]) return { success: false, error: "Trabalhador não encontrado" }
 
   const valorDiaria = Number(trabalhador[0].valor_diaria)
-  const valorDia = parsed.tipo === "inteiro" ? valorDiaria : valorDiaria / 2
+  const valorDia = parsed.data.tipo === "inteiro" ? valorDiaria : valorDiaria / 2
 
-  await db`
-    INSERT INTO dias_trabalhados (trabalhador_id, data, tipo, valor_dia, observacao)
-    VALUES (${parsed.trabalhador_id}, ${parsed.data}, ${parsed.tipo}, ${valorDia}, ${parsed.observacao || null})
-  `
+  try {
+    await db`
+      INSERT INTO dias_trabalhados (trabalhador_id, data, tipo, valor_dia, observacao)
+      VALUES (${parsed.data.trabalhador_id}, ${parsed.data.data}, ${parsed.data.tipo}, ${valorDia}, ${parsed.data.observacao || null})
+    `
+  } catch (e: unknown) {
+    if ((e as { code?: string })?.code === "23505") {
+      const dataFormatada = new Date(parsed.data.data).toLocaleDateString("pt-BR")
+      return { success: false, error: `${trabalhador[0].nome} já tem registro no dia ${dataFormatada}` }
+    }
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
 
-  revalidatePath(`/trabalhadores/${parsed.trabalhador_id}`)
+  logAudit("registrar_dia", `Trabalhador: ${parsed.data.trabalhador_id}, Data: ${parsed.data.data}`)
+  revalidatePath(`/trabalhadores/${parsed.data.trabalhador_id}`)
   revalidatePath("/")
+  return { success: true }
 }
 
 const registrarPagamentoSchema = z.object({
@@ -38,23 +53,27 @@ const registrarPagamentoSchema = z.object({
   data_pagamento: z.string().min(1, "Selecione a data do pagamento"),
 })
 
-export async function registrarPagamentoDia(formData: FormData) {
-  const parsed = registrarPagamentoSchema.parse(Object.fromEntries(formData))
+export async function registrarPagamentoDia(formData: FormData): Promise<ActionResult> {
+  await requireAuth()
+  const parsed = registrarPagamentoSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { success: false, error: "Verifique os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   const db = await getDb()
 
   const dia = await db`
-    SELECT trabalhador_id FROM dias_trabalhados WHERE id = ${parsed.dia_id}
+    SELECT trabalhador_id FROM dias_trabalhados WHERE id = ${parsed.data.dia_id}
   `
-  if (!dia[0]) throw new Error("Registro não encontrado")
+  if (!dia[0]) return { success: false, error: "Registro não encontrado" }
 
   await db`
     UPDATE dias_trabalhados
-    SET pago = true, valor_pago = ${parsed.valor_pago}, data_pagamento = ${parsed.data_pagamento}
-    WHERE id = ${parsed.dia_id}
+    SET pago = true, valor_pago = ${parsed.data.valor_pago}, data_pagamento = ${parsed.data.data_pagamento}
+    WHERE id = ${parsed.data.dia_id}
   `
 
+  logAudit("registrar_pagamento", `Dia: ${parsed.data.dia_id}, Valor: ${parsed.data.valor_pago}`)
   revalidatePath(`/trabalhadores/${dia[0].trabalhador_id}`)
   revalidatePath("/")
+  return { success: true }
 }
 
 const atualizarDiaSchema = z.object({
@@ -65,67 +84,90 @@ const atualizarDiaSchema = z.object({
   data_pagamento: z.string().optional(),
 })
 
-export async function atualizarDia(formData: FormData) {
-  const parsed = atualizarDiaSchema.parse(Object.fromEntries(formData))
+export async function atualizarDia(formData: FormData): Promise<ActionResult> {
+  await requireAuth()
+  const parsed = atualizarDiaSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) return { success: false, error: "Verifique os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   const db = await getDb()
 
   const dia = await db`
-    SELECT d.trabalhador_id, t.valor_diaria, d.pago
+    SELECT d.trabalhador_id, t.valor_diaria, d.pago, t.nome
     FROM dias_trabalhados d
     JOIN trabalhadores t ON t.id = d.trabalhador_id
-    WHERE d.id = ${parsed.id}
+    WHERE d.id = ${parsed.data.id}
   `
-  if (!dia[0]) throw new Error("Registro não encontrado")
+  if (!dia[0]) return { success: false, error: "Registro não encontrado" }
 
-  const { trabalhador_id, valor_diaria, pago } = dia[0] as { trabalhador_id: string; valor_diaria: number; pago: boolean }
-  const novoValorDia = parsed.tipo === "inteiro" ? Number(valor_diaria) : Number(valor_diaria) / 2
-  const novoPago = pago ? (parsed.valor_pago != null && parsed.valor_pago > 0) : false
+  const { trabalhador_id, valor_diaria, pago, nome } = dia[0] as { trabalhador_id: string; valor_diaria: number; pago: boolean; nome: string }
+  const novoValorDia = parsed.data.tipo === "inteiro" ? Number(valor_diaria) : Number(valor_diaria) / 2
+  const novoPago = pago ? (parsed.data.valor_pago != null && parsed.data.valor_pago > 0) : false
+
+  try {
+    await db`
+      UPDATE dias_trabalhados
+      SET
+        data = ${parsed.data.data},
+        tipo = ${parsed.data.tipo},
+        valor_dia = ${novoValorDia},
+        pago = ${novoPago},
+        valor_pago = ${novoPago ? parsed.data.valor_pago : null},
+        data_pagamento = ${novoPago ? parsed.data.data_pagamento : null}
+      WHERE id = ${parsed.data.id}
+    `
+  } catch (e: unknown) {
+    if ((e as { code?: string })?.code === "23505") {
+      const dataFormatada = new Date(parsed.data.data).toLocaleDateString("pt-BR")
+      return { success: false, error: `${nome} já tem registro no dia ${dataFormatada}` }
+    }
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
+
+  logAudit("atualizar_dia", `ID: ${parsed.data.id}`)
+  revalidatePath(`/trabalhadores/${trabalhador_id}`)
+  revalidatePath("/")
+  return { success: true }
+}
+
+const uuidSchema = z.string().uuid()
+
+export async function pagarSemana(trabalhadorId: string, diaIds: string[]) {
+  await requireAuth()
+  const idOk = uuidSchema.safeParse(trabalhadorId)
+  if (!idOk.success) return
+  const idsOk = z.array(uuidSchema).safeParse(diaIds)
+  if (!idsOk.success) return
+  const db = await getDb()
 
   await db`
     UPDATE dias_trabalhados
-    SET
-      data = ${parsed.data},
-      tipo = ${parsed.tipo},
-      valor_dia = ${novoValorDia},
-      pago = ${novoPago},
-      valor_pago = ${novoPago ? parsed.valor_pago : null},
-      data_pagamento = ${novoPago ? parsed.data_pagamento : null}
-    WHERE id = ${parsed.id}
+    SET pago = true, valor_pago = valor_dia, data_pagamento = CURRENT_DATE
+    WHERE trabalhador_id = ${trabalhadorId} AND id = ANY(${diaIds}::uuid[]) AND pago = false
   `
 
-  revalidatePath(`/trabalhadores/${trabalhador_id}`)
-  revalidatePath("/")
-}
-
-export async function pagarSemana(trabalhadorId: string, diaIds: string[]) {
-  const db = await getDb()
-
-  for (const id of diaIds) {
-    await db`
-      UPDATE dias_trabalhados
-      SET pago = true, valor_pago = valor_dia, data_pagamento = CURRENT_DATE
-      WHERE id = ${id} AND pago = false
-    `
-  }
-
+  logAudit("pagar_semana", `Trabalhador: ${trabalhadorId}, Dias: ${diaIds.length}`)
   revalidatePath(`/trabalhadores/${trabalhadorId}`)
   revalidatePath("/")
 }
 
 export async function deletarDia(id: string) {
+  await requireAuth()
+  const idOk = uuidSchema.safeParse(id)
+  if (!idOk.success) return
   const db = await getDb()
   const dia = await db`
     SELECT trabalhador_id FROM dias_trabalhados WHERE id = ${id}
   `
-  if (!dia[0]) throw new Error("Registro não encontrado")
+  if (!dia[0]) return
 
   await db`DELETE FROM dias_trabalhados WHERE id = ${id}`
 
+  logAudit("deletar_dia", `ID: ${id}`)
   revalidatePath(`/trabalhadores/${dia[0].trabalhador_id}`)
   revalidatePath("/")
 }
 
 export async function listarDias(trabalhadorId: string) {
+  await requireAuth()
   const db = await getDb()
   return await db`
     SELECT * FROM dias_trabalhados

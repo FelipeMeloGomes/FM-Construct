@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Pencil } from "lucide-react"
+import { FieldErrors, getFieldErrors } from "@/components/ui/field-error"
 
 interface EditarDiaDialogProps {
   dia: {
@@ -29,24 +30,27 @@ interface EditarDiaDialogProps {
 export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
   const [open, setOpen] = useState(false)
   const [tipo, setTipo] = useState<"inteiro" | "meio">(dia.tipo as "inteiro" | "meio")
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>()
 
   const valorCalculado = tipo === "inteiro" ? valorDiaria : valorDiaria / 2
 
   async function handleSubmit(formData: FormData) {
+    setFieldErrors(undefined)
     formData.set("id", dia.id)
     formData.set("tipo", tipo)
-    try {
-      await atualizarDia(formData)
-      toast.success("Dia atualizado com sucesso!")
-      setOpen(false)
-    } catch {
-      toast.error("Erro ao atualizar dia")
+    const result = await atualizarDia(formData)
+    if (!result.success) {
+      if (result.fieldErrors) setFieldErrors(result.fieldErrors)
+      toast.error(result.error)
+      return
     }
+    toast.success("Dia atualizado com sucesso!")
+    setOpen(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="ghost" size="icon" className="size-9 sm:size-7 text-slate-500 hover:text-amber-400">
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setFieldErrors(undefined) }}>
+      <DialogTrigger render={<Button variant="ghost" size="icon" className="size-9 sm:size-7 text-slate-500 hover:text-amber-400 cursor-pointer" aria-label="Editar dia">
         <Pencil className="size-4 sm:size-3.5" />
       </Button>} />
       <DialogContent className="top-1/2 left-1/2 bottom-auto -translate-x-1/2 -translate-y-1/2 rounded-xl">
@@ -61,7 +65,8 @@ export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
             <form action={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="data">Data</Label>
-                <Input id="data" name="data" type="date" defaultValue={toDateInputValue(dia.data)} required />
+                <Input id="data" name="data" type="date" defaultValue={toDateInputValue(dia.data)} required aria-invalid={!!getFieldErrors("data", fieldErrors)} aria-describedby="data-error" />
+                <FieldErrors errors={getFieldErrors("data", fieldErrors)} />
               </div>
 
               <div className="space-y-2">
@@ -94,7 +99,10 @@ export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
                       min="0"
                       defaultValue={dia.valor_pago ?? valorCalculado}
                       required
+                      aria-invalid={!!getFieldErrors("valor_pago", fieldErrors)}
+                      aria-describedby="valor_pago-error"
                     />
+                    <FieldErrors errors={getFieldErrors("valor_pago", fieldErrors)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="data_pagamento">Data do pagamento</Label>
@@ -104,13 +112,16 @@ export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
                       type="date"
                       defaultValue={toDateInputValue(dia.data_pagamento)}
                       required
+                      aria-invalid={!!getFieldErrors("data_pagamento", fieldErrors)}
+                      aria-describedby="data_pagamento-error"
                     />
+                    <FieldErrors errors={getFieldErrors("data_pagamento", fieldErrors)} />
                   </div>
                 </>
               )}
 
               <DialogFooter>
-                <Button type="submit">Salvar</Button>
+                <Button type="submit" className="cursor-pointer">Salvar</Button>
               </DialogFooter>
             </form>
           </>

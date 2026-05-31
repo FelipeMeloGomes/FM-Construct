@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDb } from "@/lib/db"
 import { formatCurrency } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +8,7 @@ import { Button } from "@/components/ui/button"
 export async function DashboardContent() {
   const db = await getDb()
 
-  const [trabalhadores, dias, despesas, mesDias, mesDespesas] = await Promise.all([
+  const [trabalhadores, dias, despesas, mesDias, mesDespesas, ultimosPagamentos] = await Promise.all([
     db`SELECT COUNT(*)::int as total FROM trabalhadores WHERE ativo = true`,
     db`
       SELECT
@@ -33,16 +32,15 @@ export async function DashboardContent() {
       WHERE data >= date_trunc('month', CURRENT_DATE)
         AND data < date_trunc('month', CURRENT_DATE) + interval '1 month'
     `,
+    db`
+      SELECT d.*, t.nome as trabalhador_nome
+      FROM dias_trabalhados d
+      JOIN trabalhadores t ON t.id = d.trabalhador_id
+      WHERE d.pago = true
+      ORDER BY d.data_pagamento DESC NULLS LAST
+      LIMIT 5
+    ` as unknown as { id: string; valor_pago: number; trabalhador_nome: string }[],
   ])
-
-  const ultimosPagamentos = await db`
-    SELECT d.*, t.nome as trabalhador_nome
-    FROM dias_trabalhados d
-    JOIN trabalhadores t ON t.id = d.trabalhador_id
-    WHERE d.pago = true
-    ORDER BY d.data_pagamento DESC NULLS LAST
-    LIMIT 5
-  `
 
   const totalPago = Number(dias[0].total_pago)
   const totalPendente = Number(dias[0].total_pendente)
@@ -70,10 +68,10 @@ export async function DashboardContent() {
         </p>
         <div className="flex gap-3 mt-8">
           <Link href="/trabalhadores/novo">
-            <Button className="btn-glow">Cadastrar Trabalhador</Button>
+            <Button className="btn-glow cursor-pointer">Cadastrar Trabalhador</Button>
           </Link>
           <Link href="/despesas/nova">
-            <Button variant="outline">Registrar Despesa</Button>
+            <Button variant="outline" className="cursor-pointer">Registrar Despesa</Button>
           </Link>
         </div>
       </div>
@@ -192,7 +190,7 @@ export async function DashboardContent() {
             </CardHeader>
             <CardContent>
               <div className="divide-y divide-border/50">
-                {ultimosPagamentos.map((p: any, i: number) => (
+                {ultimosPagamentos.map((p, i: number) => (
                   <div
                     key={p.id}
                     className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0"

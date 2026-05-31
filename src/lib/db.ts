@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SqlTag = (strings: TemplateStringsArray, ...values: any[]) => Promise<any[]>
+type SqlTag = (strings: TemplateStringsArray, ...values: unknown[]) => Promise<Record<string, unknown>[]>
 
 let sql: SqlTag | null = null
 
