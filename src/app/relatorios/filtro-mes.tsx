@@ -20,7 +20,7 @@ export function FiltroMes({ mesAtual }: { mesAtual: string }) {
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="mes" className="text-sm text-slate-400">Mês:</label>
+      <label htmlFor="mes" className="text-sm text-muted-foreground">Mês:</label>
       <select
         id="mes"
         value={mesAtual}
@@ -28,7 +28,7 @@ export function FiltroMes({ mesAtual }: { mesAtual: string }) {
           const val = e.target.value
           router.push(val ? `/relatorios?mes=${val}` : "/relatorios")
         }}
-        className="flex h-9 w-48 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1 text-sm text-slate-200 shadow-sm outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+        className="flex h-9 w-48 rounded-lg border border-border bg-background px-3 py-1 text-sm text-foreground shadow-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring"
       >
         <option value="">Todos os meses</option>
         {meses.map((m) => (

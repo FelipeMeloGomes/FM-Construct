@@ -41,6 +41,14 @@ export const CATEGORIAS_DESPESA: { value: CategoriaDespesa; label: string }[] = 
   { value: "outros", label: "Outros" },
 ]
 
+export const CATEGORY_BADGE_COLORS: Record<CategoriaDespesa, string> = {
+  material: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  alimentacao: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  transporte: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  ferramentas: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+  outros: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+}
+
 export interface DashboardResumo {
   totalGastoTrabalhadores: number
   totalPendente: number
