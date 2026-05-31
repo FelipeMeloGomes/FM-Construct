@@ -22,6 +22,7 @@ export function TransitionLink({
   const router = useRouter()
 
   function handleClick(e: MouseEvent<HTMLAnchorElement>) {
+    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return
     e.preventDefault()
     startTransition(() => {
       addTransitionType(type)

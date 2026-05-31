@@ -47,3 +47,10 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_log_acao ON audit_log(acao);
+
+CREATE TABLE IF NOT EXISTS rate_limits (
+  ip VARCHAR(45) PRIMARY KEY,
+  attempt_count INT NOT NULL DEFAULT 1,
+  blocked_until TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);

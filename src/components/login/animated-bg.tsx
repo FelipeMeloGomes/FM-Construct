@@ -43,7 +43,7 @@ export default function AnimatedBg() {
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
       {/* Blueprint grid */}
-      <svg className="absolute inset-0 h-full w-full opacity-[0.06] dark:opacity-[0.05]" xmlns="http://www.w3.org/2000/svg">
+      <svg className="absolute inset-0 h-full w-full text-foreground opacity-[0.04] dark:opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="blueprint-grid" width="60" height="60" patternUnits="userSpaceOnUse">
             <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="0.5" />
@@ -56,11 +56,17 @@ export default function AnimatedBg() {
         <rect width="100%" height="100%" fill="url(#blueprint-dot)" />
       </svg>
 
+      {/* Light mode accent glow */}
+      <div className="absolute -top-40 left-1/2 size-96 -translate-x-1/2 rounded-full bg-amber-500/3 blur-[120px] dark:hidden" />
+
+      {/* Dark mode accent glow */}
+      <div className="absolute -top-40 left-1/2 size-96 -translate-x-1/2 rounded-full bg-amber-500/8 blur-[120px] hidden dark:block" />
+
       {/* Pickaxes (ambient floating) */}
       {pickaxes.map((icon) => (
         <div
           key={icon.id}
-          className="absolute text-amber-600/15 dark:text-amber-400/10"
+          className="absolute text-amber-600/20 dark:text-amber-400/15"
           style={{
             left: icon.x + "%",
             top: icon.y + "%",
@@ -75,7 +81,7 @@ export default function AnimatedBg() {
       {icons.map((icon) => (
         <div
           key={icon.id}
-          className="absolute text-amber-600/20 dark:text-amber-400/15"
+          className="absolute text-amber-600/25 dark:text-amber-400/20"
           style={{
             left: icon.x + "%",
             top: icon.y + "%",

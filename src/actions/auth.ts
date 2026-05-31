@@ -24,7 +24,7 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
   const headerStore = await headers()
   const ip = headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() || headerStore.get("x-real-ip") || "unknown"
 
-  const { allowed, delay } = checkRateLimit(ip)
+  const { allowed, delay } = await checkRateLimit(ip)
   if (!allowed) {
     return { success: false, error: "Muitas tentativas. Tente novamente em 15 minutos." }
   }
@@ -42,12 +42,12 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
   }
 
   if (username !== expectedUser || password !== expectedPass) {
-    recordAttempt(ip, false)
+    await recordAttempt(ip, false)
     logAudit("login_falhou", `Usuário: ${username}`)
     return { success: false, error: "Credenciais inválidas" }
   }
 
-  recordAttempt(ip, true)
+  await recordAttempt(ip, true)
 
   const { token, sub } = await createToken()
   const cookieStore = await cookies()

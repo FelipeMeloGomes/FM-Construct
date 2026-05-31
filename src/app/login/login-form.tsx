@@ -80,7 +80,7 @@ export function LoginForm() {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             disabled={pending}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors disabled:opacity-60 cursor-pointer"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60 cursor-pointer"
             tabIndex={-1}
             aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
           >

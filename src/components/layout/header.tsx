@@ -7,6 +7,11 @@ import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { navLinks } from "@/lib/navigation"
 import { TransitionLink } from "./transition-link"
 
+function isActive(href: string, pathname: string) {
+  if (href === "/") return pathname === "/"
+  return pathname.startsWith(href)
+}
+
 export function Header() {
   const pathname = usePathname()
 
@@ -33,13 +38,13 @@ export function Header() {
                 type="lateral"
                 className={cn(
                   "relative px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  pathname === link.href
+                  isActive(link.href, pathname)
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                 )}
                 aria-label={link.label}
               >
-                {pathname === link.href && (
+                {isActive(link.href, pathname) && (
                   <span className="absolute inset-0 rounded-lg bg-primary/10 ring-1 ring-primary/20" />
                 )}
                 <span className="relative">{link.label}</span>
