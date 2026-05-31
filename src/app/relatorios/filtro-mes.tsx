@@ -28,7 +28,7 @@ export function FiltroMes({ mesAtual }: { mesAtual: string }) {
           const val = e.target.value
           router.push(val ? `/relatorios?mes=${val}` : "/relatorios")
         }}
-        className="flex h-9 w-48 rounded-lg border border-border bg-background px-3 py-1 text-sm text-foreground shadow-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring"
+        className="flex h-9 w-full sm:w-48 rounded-lg border border-border bg-background px-3 py-1 text-sm text-foreground shadow-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring"
       >
         <option value="">Todos os meses</option>
         {meses.map((m) => (
