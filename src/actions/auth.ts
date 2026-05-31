@@ -1,19 +1,25 @@
 "use server"
 
 import { cookies, headers } from "next/headers"
+import { z } from "zod"
 import { createToken } from "@/lib/auth"
 import { checkRateLimit, recordAttempt } from "@/lib/rate-limit"
 import { logAudit } from "@/lib/audit"
 import type { ActionResult } from "@/lib/actions/shared"
 
+const loginSchema = z.object({
+  username: z.string().min(1, "Campo obrigatório"),
+  password: z.string().min(1, "Campo obrigatório"),
+})
+
 export async function loginAction(formData: FormData): Promise<ActionResult> {
-  const username = formData.get("username") as string
-  const password = formData.get("password") as string
   const redirectTo = (formData.get("redirect") as string) || "/"
 
-  if (!username || !password) {
-    return { success: false, error: "Preencha todos os campos", fieldErrors: { username: !username ? ["Campo obrigatório"] : [], password: !password ? ["Campo obrigatório"] : [] } }
+  const parsed = loginSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    return { success: false, error: "Preencha todos os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   }
+  const { username, password } = parsed.data
 
   const headerStore = await headers()
   const ip = headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() || headerStore.get("x-real-ip") || "unknown"
@@ -62,6 +68,6 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
     path: "/",
   })
 
-  logAudit("login_ok")
+  logAudit("login_ok", "Login bem-sucedido")
   return { success: true }
 }

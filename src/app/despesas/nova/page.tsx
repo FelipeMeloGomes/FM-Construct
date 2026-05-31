@@ -63,7 +63,7 @@ export default function NovaDespesaPage() {
           <form action={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="descricao">Descrição</Label>
-              <Input id="descricao" name="descricao" placeholder="Ex: 10 sacos de cimento" required aria-invalid={!!getFieldErrors("descricao", fieldErrors)} aria-describedby="descricao-error" />
+              <Input id="descricao" name="descricao" placeholder="Ex: 10 sacos de cimento" minLength={3} required aria-invalid={!!getFieldErrors("descricao", fieldErrors)} aria-describedby="descricao-error" />
               <FieldErrors errors={getFieldErrors("descricao", fieldErrors)} />
             </div>
 
@@ -93,7 +93,7 @@ export default function NovaDespesaPage() {
                 name="valor"
                 type="number"
                 step="0.01"
-                min="0"
+                min="0.01"
                 placeholder="Ex: 350,00"
                 required
                 aria-invalid={!!getFieldErrors("valor", fieldErrors)}

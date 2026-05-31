@@ -47,7 +47,7 @@ export function EditarDespesaForm({ data }: { data: DespesaFormData }) {
     <form action={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="descricao">Descrição</Label>
-        <Input id="descricao" name="descricao" defaultValue={data.descricao} required aria-invalid={!!getFieldErrors("descricao", fieldErrors)} aria-describedby="descricao-error" />
+        <Input id="descricao" name="descricao" defaultValue={data.descricao} minLength={3} required aria-invalid={!!getFieldErrors("descricao", fieldErrors)} aria-describedby="descricao-error" />
         <FieldErrors errors={getFieldErrors("descricao", fieldErrors)} />
       </div>
 
@@ -72,7 +72,7 @@ export function EditarDespesaForm({ data }: { data: DespesaFormData }) {
 
       <div className="space-y-2">
         <Label htmlFor="valor">Valor (R$)</Label>
-        <Input id="valor" name="valor" type="number" step="0.01" min="0" defaultValue={data.valor} required aria-invalid={!!getFieldErrors("valor", fieldErrors)} aria-describedby="valor-error" />
+        <Input id="valor" name="valor" type="number" step="0.01" min="0.01" defaultValue={data.valor} required aria-invalid={!!getFieldErrors("valor", fieldErrors)} aria-describedby="valor-error" />
         <FieldErrors errors={getFieldErrors("valor", fieldErrors)} />
       </div>
 

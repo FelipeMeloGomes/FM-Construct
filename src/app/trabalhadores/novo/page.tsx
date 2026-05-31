@@ -62,7 +62,7 @@ export default function NovoTrabalhadorPage() {
           <form action={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome completo</Label>
-              <Input id="nome" name="nome" placeholder="Ex: João Silva" required aria-invalid={!!getFieldErrors("nome", fieldErrors)} aria-describedby="nome-error" />
+              <Input id="nome" name="nome" placeholder="Ex: João Silva" minLength={3} required aria-invalid={!!getFieldErrors("nome", fieldErrors)} aria-describedby="nome-error" />
               <FieldErrors errors={getFieldErrors("nome", fieldErrors)} />
             </div>
 
@@ -89,7 +89,7 @@ export default function NovoTrabalhadorPage() {
                 name="valor_diaria"
                 type="number"
                 step="0.01"
-                min="0"
+                min="0.01"
                 placeholder="Ex: 150,00"
                 required
                 aria-invalid={!!getFieldErrors("valor_diaria", fieldErrors)}

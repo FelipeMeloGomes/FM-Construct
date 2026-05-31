@@ -23,14 +23,14 @@ export function RegistrarPagamentoDialog({ diaId, valorDevido }: RegistrarPagame
   async function handleSubmit(formData: FormData) {
     const dataPagamento = formData.get("data_pagamento") as string
     formData.set("dia_id", diaId)
-    try {
-      await registrarPagamentoDia(formData)
-      const dataFormatada = new Date(dataPagamento + "T12:00:00").toLocaleDateString("pt-BR")
-      toast.success(`Pago em ${dataFormatada}`)
-      setOpen(false)
-    } catch {
-      toast.error("Erro ao registrar pagamento")
+    const result = await registrarPagamentoDia(formData)
+    if (!result.success) {
+      toast.error(result.error)
+      return
     }
+    const dataFormatada = new Date(dataPagamento + "T12:00:00").toLocaleDateString("pt-BR")
+    toast.success(`Pago em ${dataFormatada}`)
+    setOpen(false)
   }
 
   return (
@@ -60,7 +60,7 @@ export function RegistrarPagamentoDialog({ diaId, valorDevido }: RegistrarPagame
                   name="valor_pago"
                   type="number"
                   step="0.01"
-                  min="0"
+                  min="0.01"
                   defaultValue={valorDevido}
                   required
                 />

@@ -80,7 +80,7 @@ const atualizarDiaSchema = z.object({
   id: z.string().uuid(),
   data: z.string().min(1, "Selecione a data"),
   tipo: z.enum(["inteiro", "meio"]),
-  valor_pago: z.coerce.number().optional(),
+  valor_pago: z.coerce.number().positive("Valor pago deve ser positivo").optional(),
   data_pagamento: z.string().optional(),
 })
 

@@ -96,7 +96,7 @@ export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
                       name="valor_pago"
                       type="number"
                       step="0.01"
-                      min="0"
+                      min="0.01"
                       defaultValue={dia.valor_pago ?? valorCalculado}
                       required
                       aria-invalid={!!getFieldErrors("valor_pago", fieldErrors)}
