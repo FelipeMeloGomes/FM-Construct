@@ -8,26 +8,21 @@ export const metadata: Metadata = {
   title: "Detalhes do Trabalhador",
 }
 
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, formatDate } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from "@/components/ui/card"
-import {
-  AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { RegistrarDiaDialog } from "@/components/trabalhadores/registrar-dia-dialog"
 import { SemanaGroup } from "@/components/trabalhadores/semana-group"
 import { notFound } from "next/navigation"
 import { TransitionLink } from "@/components/layout/transition-link"
-import { ArrowLeft, Edit, Trash2 } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, DollarSign, ChevronDown } from "lucide-react"
 import { deletarTrabalhador } from "@/lib/actions/trabalhadores"
 import { DirectionalTransition } from "@/components/layout/directional-transition"
-import {
-  Pagination, PaginationContent, PaginationItem, PaginationLink,
-  PaginationNext, PaginationPrevious,
-} from "@/components/ui/pagination"
+import { PaginationBar } from "@/components/ui/pagination-bar"
 
 function getWeekStart(date: Date): string {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
@@ -59,6 +54,18 @@ export default async function TrabalhadorDetalhePage(props: {
   const totalDevido = dias.reduce((acc: number, d) => acc + Number(d.valor_dia), 0)
   const totalPago = dias.reduce((acc: number, d) => acc + Number(d.valor_pago ?? 0), 0)
   const totalPendente = totalDevido - totalPago
+
+  const paidDays = dias.filter((d) => d.pago && d.data_pagamento)
+  const pagamentos = Object.values(
+    paidDays.reduce((acc: Record<string, { data: string; dias: DiaTrabalhado[]; total: number }>, d) => {
+      const pgto = d.data_pagamento as Date | string
+      const key = pgto instanceof Date ? pgto.toISOString().split("T")[0] : String(pgto).substring(0, 10)
+      if (!acc[key]) acc[key] = { data: key, dias: [], total: 0 }
+      acc[key].dias.push(d)
+      acc[key].total += Number(d.valor_pago ?? 0)
+      return acc
+    }, {}),
+  ).sort((a, b) => b.data.localeCompare(a.data))
 
   const diasAgrupados = dias.reduce((acc: Record<string, DiaTrabalhado[]>, d) => {
     const dt = (d.data as unknown instanceof Date ? d.data as unknown as Date : new Date(d.data))
@@ -101,28 +108,17 @@ export default async function TrabalhadorDetalhePage(props: {
               Editar
             </Button>
           </TransitionLink>
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={<Button variant="destructive" size="sm" className="w-full sm:w-auto cursor-pointer">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Excluir
-              </Button>}
-            />
-            <AlertDialogContent className="top-1/2 left-1/2 bottom-auto -translate-x-1/2 -translate-y-1/2 rounded-xl">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir trabalhador?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Todos os dias registrados e pagamentos ser&atilde;o removidos. Esta a&ccedil;&atilde;o n&atilde;o pode ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <form action={deletarTrabalhador.bind(null, id)}>
-                                    <Button type="submit" variant="destructive" className="cursor-pointer">Sim, excluir</Button>
-                </form>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <ConfirmDialog
+            action={deletarTrabalhador.bind(null, id)}
+            title="Excluir trabalhador?"
+            description="Todos os dias registrados e pagamentos serão removidos. Esta ação não pode ser desfeita."
+            successMessage="Trabalhador excluído"
+          >
+            <Button variant="destructive" size="sm" className="w-full sm:w-auto cursor-pointer">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Excluir
+            </Button>
+          </ConfirmDialog>
           </div>
         </div>
 
@@ -212,31 +208,47 @@ export default async function TrabalhadorDetalhePage(props: {
         </div>
       )}
 
-      {totalPaginas > 1 && (
-        <Pagination>
-          <PaginationContent>
-            {paginaSegura > 1 && (
-              <PaginationItem>
-                <PaginationPrevious href={`/trabalhadores/${id}?page=${paginaSegura - 1}`} text="Anterior" />
-              </PaginationItem>
-            )}
-            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((p) => (
-              <PaginationItem key={p}>
-                <PaginationLink
-                  href={`/trabalhadores/${id}?page=${p}`}
-                  isActive={p === paginaSegura}
-                >
-                  {p}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            {paginaSegura < totalPaginas && (
-              <PaginationItem>
-                <PaginationNext href={`/trabalhadores/${id}?page=${paginaSegura + 1}`} text="Próximo" />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
+      <PaginationBar currentPage={paginaSegura} totalPages={totalPaginas} baseHref={`/trabalhadores/${id}`} />
+
+      {pagamentos.length > 0 && (
+        <div className="animate-fade-in-up delay-5">
+          <Card className="border-primary/10">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/10">
+                  <DollarSign className="size-3.5 text-emerald-500" />
+                </div>
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Histórico de Pagamentos
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {pagamentos.map((pg) => (
+                <details key={pg.data} className="group rounded-lg border border-border/50">
+                  <summary className="flex cursor-pointer items-center justify-between gap-2 p-3 text-sm hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
+                    <div className="flex items-center gap-2">
+                      <ChevronDown className="size-3.5 text-muted-foreground transition-transform group-open:rotate-180" />
+                      <span className="font-medium">{formatDate(pg.data)}</span>
+                      <span className="text-xs text-muted-foreground">{pg.dias.length} dia{pg.dias.length > 1 ? "s" : ""}</span>
+                    </div>
+                    <span className="font-semibold text-emerald-500">{formatCurrency(pg.total)}</span>
+                  </summary>
+                  <div className="border-t border-border/50 px-3 py-2">
+                    <div className="divide-y divide-border/30 text-xs">
+                      {pg.dias.map((d) => (
+                        <div key={d.id} className="flex items-center justify-between py-1.5 first:pt-0 last:pb-0">
+                          <span>{formatDate(d.data)} — {d.tipo === "inteiro" ? "Dia inteiro" : "Meio dia"}</span>
+                          <span className="font-medium text-foreground">{formatCurrency(Number(d.valor_pago ?? 0))}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
     </DirectionalTransition>
