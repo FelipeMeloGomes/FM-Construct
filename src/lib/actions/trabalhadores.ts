@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { z } from "zod"
 import { getDb } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
@@ -82,6 +83,7 @@ export async function deletarTrabalhador(id: string) {
   logAudit("deletar_trabalhador", `ID: ${id}`)
   revalidatePath("/trabalhadores")
   revalidatePath("/")
+  redirect("/trabalhadores")
 }
 
 export async function listarTrabalhadores() {
