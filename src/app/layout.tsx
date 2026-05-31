@@ -1,4 +1,5 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
+import Script from "next/script"
 import { Sora, DM_Sans, DM_Mono } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import { Header } from "@/components/layout/header"
@@ -27,8 +28,15 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "FM-Construct",
+  title: { default: "FM-Construct", template: "%s — FM-Construct" },
   description: "Sistema de gerenciamento de obra",
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 }
 
 export default function RootLayout({
@@ -36,8 +44,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <script
+      <head />
+      <body className={`${sora.variable} ${dmSans.variable} ${dmMono.variable} antialiased`}>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -51,8 +62,6 @@ export default function RootLayout({
             `,
           }}
         />
-      </head>
-      <body className={`${sora.variable} ${dmSans.variable} ${dmMono.variable} antialiased`}>
         <ThemeProvider>
           <Header />
           <main className="min-h-[calc(100vh-4rem)] pb-20 md:pb-6">

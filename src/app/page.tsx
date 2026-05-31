@@ -1,11 +1,18 @@
 import { Suspense } from "react"
-import { Skeleton } from "@/components/ui/skeleton"
+import type { Metadata } from "next"
 import { DashboardContent } from "@/components/dashboard/dashboard-content"
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton"
+import { DirectionalTransition } from "@/components/layout/directional-transition"
 
 export const dynamic = "force-dynamic"
 
+export const metadata: Metadata = {
+  title: "Dashboard",
+}
+
 export default function DashboardPage() {
   return (
+    <DirectionalTransition>
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-amber-400">Dashboard</h1>
@@ -16,15 +23,8 @@ export default function DashboardPage() {
         <DashboardContent />
       </Suspense>
     </div>
+    </DirectionalTransition>
   )
 }
 
-function DashboardSkeleton() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="h-28 rounded-xl" />
-      ))}
-    </div>
-  )
-}
+

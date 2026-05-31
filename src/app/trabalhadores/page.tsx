@@ -1,7 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDb } from "@/lib/db"
+import type { Metadata } from "next"
+import type { Trabalhador } from "@/types"
 
 export const dynamic = "force-dynamic"
+
+export const metadata: Metadata = {
+  title: "Trabalhadores",
+}
+
 import { formatCurrency } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,34 +18,36 @@ import {
   AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Plus, Users, Edit, Trash2, ChevronRight } from "lucide-react"
-import Link from "next/link"
+import { TransitionLink } from "@/components/layout/transition-link"
 import { deletarTrabalhador } from "@/lib/actions/trabalhadores"
 import { RegistrarDiaDialog } from "@/components/trabalhadores/registrar-dia-dialog"
+import { DirectionalTransition } from "@/components/layout/directional-transition"
 
 export default async function TrabalhadoresPage() {
   const db = await getDb()
-  const trabalhadores = await db`
+  const trabalhadores = (await db`
     SELECT t.*,
       COALESCE(SUM(CASE WHEN NOT d.pago THEN d.valor_dia ELSE 0 END), 0) as total_pendente
     FROM trabalhadores t
     LEFT JOIN dias_trabalhados d ON d.trabalhador_id = t.id
     GROUP BY t.id
     ORDER BY t.ativo DESC, t.nome ASC
-  `
+  `) as unknown as (Trabalhador & { total_pendente: number })[]
 
   return (
+    <DirectionalTransition>
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-amber-400">Trabalhadores</h1>
           <p className="text-sm text-slate-400 mt-1">Pedreiros e serventes cadastrados</p>
         </div>
-        <Link href="/trabalhadores/novo">
-          <Button>
+        <TransitionLink href="/trabalhadores/novo" type="nav-forward">
+          <Button className="cursor-pointer">
             <Plus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Novo</span>
           </Button>
-        </Link>
+        </TransitionLink>
       </div>
 
       {trabalhadores.length === 0 ? (
@@ -47,9 +55,9 @@ export default async function TrabalhadoresPage() {
           <Users className="h-12 w-12 mb-4" />
           <p className="text-lg font-medium">Nenhum trabalhador cadastrado</p>
           <p className="text-sm mt-1">Crie o primeiro trabalhador para come&ccedil;ar</p>
-          <Link href="/trabalhadores/novo" className="mt-4">
-            <Button>Cadastrar Trabalhador</Button>
-          </Link>
+          <TransitionLink href="/trabalhadores/novo" type="nav-forward" className="mt-4">
+            <Button className="cursor-pointer">Cadastrar Trabalhador</Button>
+          </TransitionLink>
         </div>
       ) : (
         <Table>
@@ -64,13 +72,13 @@ export default async function TrabalhadoresPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {trabalhadores.map((t: any) => (
+            {trabalhadores.map((t) => (
               <TableRow key={t.id}>
                 <TableCell>
-                  <Link href={`/trabalhadores/${t.id}`} className="group inline-flex items-center gap-1 font-medium hover:text-amber-400 transition-colors">
+                  <TransitionLink href={`/trabalhadores/${t.id}`} type="nav-forward" className="group inline-flex items-center gap-1 font-medium hover:text-amber-400 transition-colors">
                     {t.nome}
                     <ChevronRight className="size-3.5 text-slate-500 sm:opacity-0 sm:-ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-                  </Link>
+                  </TransitionLink>
                 </TableCell>
                 <TableCell className="hidden md:table-cell capitalize">{t.funcao}</TableCell>
                 <TableCell className="hidden md:table-cell">{formatCurrency(Number(t.valor_diaria))}</TableCell>
@@ -87,18 +95,18 @@ export default async function TrabalhadoresPage() {
                     <RegistrarDiaDialog
                       trabalhadorId={t.id}
                       valorDiaria={Number(t.valor_diaria)}
-                      trigger={<Button variant="ghost" size="icon" className="size-9 md:size-8 text-emerald-400 hover:text-emerald-300">
+                      trigger={<Button variant="ghost" size="icon" className="size-9 md:size-8 text-emerald-400 hover:text-emerald-300 cursor-pointer" aria-label="Registrar dia">
                         <Plus className="size-4" />
                       </Button>}
                     />
-                    <Link href={`/trabalhadores/${t.id}/editar`}>
-                      <Button variant="ghost" size="icon" className="size-9 md:size-8">
+                    <TransitionLink href={`/trabalhadores/${t.id}/editar`} type="nav-forward">
+                      <Button variant="ghost" size="icon" className="size-9 md:size-8 cursor-pointer" aria-label="Editar trabalhador">
                         <Edit className="size-4 md:size-3.5" />
                       </Button>
-                    </Link>
+                    </TransitionLink>
                     <AlertDialog>
                       <AlertDialogTrigger
-                        render={<Button variant="ghost" size="icon" className="size-9 md:size-8 text-slate-500 hover:text-red-400">
+                        render={<Button variant="ghost" size="icon" className="size-9 md:size-8 text-slate-500 hover:text-red-400 cursor-pointer" aria-label="Excluir trabalhador">
                           <Trash2 className="size-4 md:size-3.5" />
                         </Button>}
                       />
@@ -112,7 +120,7 @@ export default async function TrabalhadoresPage() {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <form action={deletarTrabalhador.bind(null, t.id)}>
-                            <Button type="submit" variant="destructive">Sim, excluir</Button>
+                            <Button type="submit" variant="destructive" className="cursor-pointer">Sim, excluir</Button>
                           </form>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -125,5 +133,6 @@ export default async function TrabalhadoresPage() {
         </Table>
       )}
     </div>
+    </DirectionalTransition>
   )
 }

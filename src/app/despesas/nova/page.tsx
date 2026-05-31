@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useState, startTransition, addTransitionType } from "react"
 import { toast } from "sonner"
 import { criarDespesa } from "@/lib/actions/despesas"
 import { Button } from "@/components/ui/button"
@@ -14,30 +15,39 @@ import {
 } from "@/components/ui/select"
 import { CATEGORIAS_DESPESA } from "@/types"
 import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { FieldErrors, getFieldErrors } from "@/components/ui/field-error"
+import { DirectionalTransition } from "@/components/layout/directional-transition"
+import { TransitionLink } from "@/components/layout/transition-link"
 
 export default function NovaDespesaPage() {
   const router = useRouter()
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>()
 
   async function handleSubmit(formData: FormData) {
-    try {
-      await criarDespesa(formData)
-      toast.success("Despesa registrada com sucesso!")
+    setFieldErrors(undefined)
+    const result = await criarDespesa(formData)
+    if (!result.success) {
+      if (result.fieldErrors) setFieldErrors(result.fieldErrors)
+      toast.error(result.error)
+      return
+    }
+    toast.success("Despesa registrada com sucesso!")
+    startTransition(() => {
+      addTransitionType("nav-back")
       router.push("/despesas")
       router.refresh()
-    } catch {
-      toast.error("Erro ao registrar despesa")
-    }
+    })
   }
 
   return (
+    <DirectionalTransition>
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/despesas">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+          <TransitionLink href="/despesas" type="nav-back">
+            <Button variant="ghost" size="icon" className="cursor-pointer" aria-label="Voltar">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </TransitionLink>
         <div>
           <h1 className="text-2xl font-bold text-amber-400">Nova Despesa</h1>
           <p className="text-sm text-slate-400 mt-1">Registre um gasto da obra</p>
@@ -53,14 +63,17 @@ export default function NovaDespesaPage() {
           <form action={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="descricao">Descrição</Label>
-              <Input id="descricao" name="descricao" placeholder="Ex: 10 sacos de cimento" required />
+              <Input id="descricao" name="descricao" placeholder="Ex: 10 sacos de cimento" required aria-invalid={!!getFieldErrors("descricao", fieldErrors)} aria-describedby="descricao-error" />
+              <FieldErrors errors={getFieldErrors("descricao", fieldErrors)} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="categoria">Categoria</Label>
               <Select name="categoria" required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
+                  <SelectValue placeholder="Selecione">
+                    {(value: string | null) => value ? CATEGORIAS_DESPESA.find(c => c.value === value)?.label || value : "Selecione"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIAS_DESPESA.map((cat) => (
@@ -70,6 +83,7 @@ export default function NovaDespesaPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <FieldErrors errors={getFieldErrors("categoria", fieldErrors)} />
             </div>
 
             <div className="space-y-2">
@@ -82,7 +96,10 @@ export default function NovaDespesaPage() {
                 min="0"
                 placeholder="Ex: 350,00"
                 required
+                aria-invalid={!!getFieldErrors("valor", fieldErrors)}
+                aria-describedby="valor-error"
               />
+              <FieldErrors errors={getFieldErrors("valor", fieldErrors)} />
             </div>
 
             <div className="space-y-2">
@@ -93,7 +110,10 @@ export default function NovaDespesaPage() {
                 type="date"
                 defaultValue={new Date().toISOString().split("T")[0]}
                 required
+                aria-invalid={!!getFieldErrors("data", fieldErrors)}
+                aria-describedby="data-error"
               />
+              <FieldErrors errors={getFieldErrors("data", fieldErrors)} />
             </div>
 
             <div className="space-y-2">
@@ -106,12 +126,13 @@ export default function NovaDespesaPage() {
               <Input id="observacao" name="observacao" placeholder="Nota fiscal nº 1234" />
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full cursor-pointer">
               Registrar Despesa
             </Button>
           </form>
         </CardContent>
       </Card>
     </div>
+    </DirectionalTransition>
   )
 }

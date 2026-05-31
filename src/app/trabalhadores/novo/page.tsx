@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useState, startTransition, addTransitionType } from "react"
 import { toast } from "sonner"
 import { criarTrabalhador } from "@/lib/actions/trabalhadores"
 import { Button } from "@/components/ui/button"
@@ -13,30 +14,39 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { TransitionLink } from "@/components/layout/transition-link"
+import { FieldErrors, getFieldErrors } from "@/components/ui/field-error"
+import { DirectionalTransition } from "@/components/layout/directional-transition"
 
 export default function NovoTrabalhadorPage() {
   const router = useRouter()
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>()
 
   async function handleSubmit(formData: FormData) {
-    try {
-      await criarTrabalhador(formData)
-      toast.success("Trabalhador cadastrado com sucesso!")
+    setFieldErrors(undefined)
+    const result = await criarTrabalhador(formData)
+    if (!result.success) {
+      if (result.fieldErrors) setFieldErrors(result.fieldErrors)
+      toast.error(result.error)
+      return
+    }
+    toast.success("Trabalhador cadastrado com sucesso!")
+    startTransition(() => {
+      addTransitionType("nav-back")
       router.push("/trabalhadores")
       router.refresh()
-    } catch {
-      toast.error("Erro ao cadastrar trabalhador")
-    }
+    })
   }
 
   return (
+    <DirectionalTransition>
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/trabalhadores">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+          <TransitionLink href="/trabalhadores" type="nav-back">
+            <Button variant="ghost" size="icon" className="cursor-pointer" aria-label="Voltar">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </TransitionLink>
         <div>
           <h1 className="text-2xl font-bold text-amber-400">Novo Trabalhador</h1>
           <p className="text-sm text-slate-400 mt-1">Cadastre um pedreiro ou servente</p>
@@ -52,20 +62,24 @@ export default function NovoTrabalhadorPage() {
           <form action={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome completo</Label>
-              <Input id="nome" name="nome" placeholder="Ex: João Silva" required />
+              <Input id="nome" name="nome" placeholder="Ex: João Silva" required aria-invalid={!!getFieldErrors("nome", fieldErrors)} aria-describedby="nome-error" />
+              <FieldErrors errors={getFieldErrors("nome", fieldErrors)} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="funcao">Função</Label>
               <Select name="funcao" required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
+                  <SelectValue placeholder="Selecione">
+                    {(value: string | null) => value ? value.charAt(0).toUpperCase() + value.slice(1) : "Selecione"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pedreiro">Pedreiro</SelectItem>
                   <SelectItem value="servente">Servente</SelectItem>
                 </SelectContent>
               </Select>
+              <FieldErrors errors={getFieldErrors("funcao", fieldErrors)} />
             </div>
 
             <div className="space-y-2">
@@ -78,15 +92,19 @@ export default function NovoTrabalhadorPage() {
                 min="0"
                 placeholder="Ex: 150,00"
                 required
+                aria-invalid={!!getFieldErrors("valor_diaria", fieldErrors)}
+                aria-describedby="valor_diaria-error"
               />
+              <FieldErrors errors={getFieldErrors("valor_diaria", fieldErrors)} />
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full cursor-pointer">
               Cadastrar
             </Button>
           </form>
         </CardContent>
       </Card>
     </div>
+    </DirectionalTransition>
   )
 }
