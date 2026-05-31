@@ -1,12 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDb } from "@/lib/db"
+import type { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
+
+export const metadata: Metadata = {
+  title: "Relatórios",
+}
+
 import { formatCurrency } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FileText, Download } from "lucide-react"
 import { FiltroMes } from "./filtro-mes"
+import { DirectionalTransition } from "@/components/layout/directional-transition"
 
 export default async function RelatoriosPage(props: {
   searchParams: Promise<{ mes?: string }>
@@ -58,12 +64,13 @@ export default async function RelatoriosPage(props: {
 
   const [resumoTrabalhadores, resumoDespesas] = await Promise.all([filtroDias, filtroDespesas])
 
-  const r = resumoTrabalhadores[0] as any
-  const d = resumoDespesas[0] as any
+  const r = resumoTrabalhadores[0] as unknown as { total_trabalhadores: number; total_devido: number; total_pago: number; total_pendente: number }
+  const d = resumoDespesas[0] as unknown as { total_despesas: number; qtd_despesas: number }
 
   const exportParams = mesFiltro ? `&mes=${mesFiltro}` : ""
 
   return (
+    <DirectionalTransition>
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-amber-400">Relatórios</h1>
@@ -111,15 +118,21 @@ export default async function RelatoriosPage(props: {
             </p>
             <div className="flex gap-2">
               <a href={`/api/export?type=trabalhadores&format=pdf${exportParams}`} target="_blank">
-                <Button variant="outline">
+                <Button variant="outline" className="cursor-pointer">
                   <FileText className="h-4 w-4 mr-2" />
                   PDF
                 </Button>
               </a>
               <a href={`/api/export?type=trabalhadores&format=txt${exportParams}`} target="_blank">
-                <Button variant="outline">
+                <Button variant="outline" className="cursor-pointer">
                   <Download className="h-4 w-4 mr-2" />
                   TXT
+                </Button>
+              </a>
+              <a href={`/api/export?type=trabalhadores&format=csv${exportParams}`} target="_blank">
+                <Button variant="outline" className="cursor-pointer">
+                  <Download className="h-4 w-4 mr-2" />
+                  CSV
                 </Button>
               </a>
             </div>
@@ -136,15 +149,21 @@ export default async function RelatoriosPage(props: {
             </p>
             <div className="flex gap-2">
               <a href={`/api/export?type=despesas&format=pdf${exportParams}`} target="_blank">
-                <Button variant="outline">
+                <Button variant="outline" className="cursor-pointer">
                   <FileText className="h-4 w-4 mr-2" />
                   PDF
                 </Button>
               </a>
               <a href={`/api/export?type=despesas&format=txt${exportParams}`} target="_blank">
-                <Button variant="outline">
+                <Button variant="outline" className="cursor-pointer">
                   <Download className="h-4 w-4 mr-2" />
                   TXT
+                </Button>
+              </a>
+              <a href={`/api/export?type=despesas&format=csv${exportParams}`} target="_blank">
+                <Button variant="outline" className="cursor-pointer">
+                  <Download className="h-4 w-4 mr-2" />
+                  CSV
                 </Button>
               </a>
             </div>
@@ -161,15 +180,21 @@ export default async function RelatoriosPage(props: {
             </p>
             <div className="flex gap-2">
               <a href={`/api/export?type=geral&format=pdf${exportParams}`} target="_blank">
-                <Button>
+                <Button className="cursor-pointer">
                   <FileText className="h-4 w-4 mr-2" />
                   PDF Completo
                 </Button>
               </a>
               <a href={`/api/export?type=geral&format=txt${exportParams}`} target="_blank">
-                <Button variant="outline">
+                <Button variant="outline" className="cursor-pointer">
                   <Download className="h-4 w-4 mr-2" />
                   TXT Completo
+                </Button>
+              </a>
+              <a href={`/api/export?type=geral&format=csv${exportParams}`} target="_blank">
+                <Button variant="outline" className="cursor-pointer">
+                  <Download className="h-4 w-4 mr-2" />
+                  CSV Completo
                 </Button>
               </a>
             </div>
@@ -177,5 +202,6 @@ export default async function RelatoriosPage(props: {
         </Card>
       </div>
     </div>
+    </DirectionalTransition>
   )
 }
