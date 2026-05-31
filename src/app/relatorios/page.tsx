@@ -116,21 +116,27 @@ export default async function RelatoriosPage(props: {
             <p className="text-sm text-slate-400">
               Relatório completo com todos os trabalhadores, dias trabalhados, valores devidos e pagamentos.
             </p>
-            <div className="flex gap-2">
-              <a href={`/api/export?type=trabalhadores&format=pdf${exportParams}`} target="_blank">
-                <Button variant="outline" className="cursor-pointer">
+            <div className="flex flex-wrap gap-2">
+              <a href={`/api/export?type=trabalhadores&format=pdf${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                   <FileText className="h-4 w-4 mr-2" />
                   PDF
                 </Button>
               </a>
-              <a href={`/api/export?type=trabalhadores&format=txt${exportParams}`} target="_blank">
-                <Button variant="outline" className="cursor-pointer">
+              <a href={`/api/export?type=trabalhadores&format=txt${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
                   TXT
                 </Button>
               </a>
-              <a href={`/api/export?type=trabalhadores&format=csv${exportParams}`} target="_blank">
-                <Button variant="outline" className="cursor-pointer">
+              <a href={`/api/export?type=trabalhadores&format=csv${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
                   CSV
                 </Button>
@@ -147,21 +153,27 @@ export default async function RelatoriosPage(props: {
             <p className="text-sm text-slate-400">
               Relatório completo com todas as despesas categorizadas por tipo.
             </p>
-            <div className="flex gap-2">
-              <a href={`/api/export?type=despesas&format=pdf${exportParams}`} target="_blank">
-                <Button variant="outline" className="cursor-pointer">
+            <div className="flex flex-wrap gap-2">
+              <a href={`/api/export?type=despesas&format=pdf${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                   <FileText className="h-4 w-4 mr-2" />
                   PDF
                 </Button>
               </a>
-              <a href={`/api/export?type=despesas&format=txt${exportParams}`} target="_blank">
-                <Button variant="outline" className="cursor-pointer">
+              <a href={`/api/export?type=despesas&format=txt${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
                   TXT
                 </Button>
               </a>
-              <a href={`/api/export?type=despesas&format=csv${exportParams}`} target="_blank">
-                <Button variant="outline" className="cursor-pointer">
+              <a href={`/api/export?type=despesas&format=csv${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
                   CSV
                 </Button>
@@ -178,21 +190,27 @@ export default async function RelatoriosPage(props: {
             <p className="text-sm text-slate-400">
               Relatório completo da obra incluindo trabalhadores, pagamentos e despesas em um único arquivo.
             </p>
-            <div className="flex gap-2">
-              <a href={`/api/export?type=geral&format=pdf${exportParams}`} target="_blank">
-                <Button className="cursor-pointer">
+            <div className="flex flex-wrap gap-2">
+              <a href={`/api/export?type=geral&format=pdf${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button className="cursor-pointer w-full sm:w-auto">
                   <FileText className="h-4 w-4 mr-2" />
                   PDF Completo
                 </Button>
               </a>
-              <a href={`/api/export?type=geral&format=txt${exportParams}`} target="_blank">
-                <Button variant="outline" className="cursor-pointer">
+              <a href={`/api/export?type=geral&format=txt${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
                   TXT Completo
                 </Button>
               </a>
-              <a href={`/api/export?type=geral&format=csv${exportParams}`} target="_blank">
-                <Button variant="outline" className="cursor-pointer">
+              <a href={`/api/export?type=geral&format=csv${exportParams}`} target="_blank"
+                className="w-full sm:w-auto"
+              >
+                <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
                   <Download className="h-4 w-4 mr-2" />
                   CSV Completo
                 </Button>
