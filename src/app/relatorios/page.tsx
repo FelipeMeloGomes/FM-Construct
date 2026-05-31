@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 import { formatCurrency } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FileText, Download } from "lucide-react"
+import { FileText, File, Table } from "lucide-react"
 import { FiltroMes } from "./filtro-mes"
 import { DirectionalTransition } from "@/components/layout/directional-transition"
 
@@ -129,7 +129,7 @@ export default async function RelatoriosPage(props: {
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
-                  <Download className="h-4 w-4 mr-2" />
+                  <File className="h-4 w-4 mr-2" />
                   TXT
                 </Button>
               </a>
@@ -137,7 +137,7 @@ export default async function RelatoriosPage(props: {
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
-                  <Download className="h-4 w-4 mr-2" />
+                  <Table className="h-4 w-4 mr-2" />
                   CSV
                 </Button>
               </a>
@@ -166,7 +166,7 @@ export default async function RelatoriosPage(props: {
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
-                  <Download className="h-4 w-4 mr-2" />
+                  <File className="h-4 w-4 mr-2" />
                   TXT
                 </Button>
               </a>
@@ -174,7 +174,7 @@ export default async function RelatoriosPage(props: {
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
-                  <Download className="h-4 w-4 mr-2" />
+                  <Table className="h-4 w-4 mr-2" />
                   CSV
                 </Button>
               </a>
@@ -203,7 +203,7 @@ export default async function RelatoriosPage(props: {
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
-                  <Download className="h-4 w-4 mr-2" />
+                  <File className="h-4 w-4 mr-2" />
                   TXT Completo
                 </Button>
               </a>
@@ -211,7 +211,7 @@ export default async function RelatoriosPage(props: {
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
-                  <Download className="h-4 w-4 mr-2" />
+                  <Table className="h-4 w-4 mr-2" />
                   CSV Completo
                 </Button>
               </a>
