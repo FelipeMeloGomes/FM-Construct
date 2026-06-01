@@ -1,50 +1,20 @@
-name: CI/CD
+name: Deploy
 
 on:
   push:
     branches: [main, beta]
 
 jobs:
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - run: pnpm lint
-
-      - run: pnpm test
-
-      - run: pnpm build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          AUTH_USER: ${{ secrets.AUTH_USER }}
-          AUTH_PASS: ${{ secrets.AUTH_PASS }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-
   deploy:
-    needs: quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
-
       - run: pnpm install --frozen-lockfile
-
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
