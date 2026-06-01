@@ -2,28 +2,32 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 let shouldThrowDuplicate = false
 const mockQuery = vi.fn()
+class DbError extends Error {
+  code: string
+  constructor(message: string, code: string) {
+    super(message)
+    this.code = code
+  }
+}
+
 vi.mock("@/lib/db", () => ({
   getDb: vi.fn(async () => {
     const fn = (strings: TemplateStringsArray, ...values: unknown[]) => {
       const sql = strings.reduce((acc, s, i) => acc + s + (values[i] !== undefined ? `$${i + 1}` : ""), "")
 
       if (sql.includes("SELECT valor_diaria, nome FROM trabalhadores")) {
-        if (shouldThrowDuplicate) return [{ valor_diaria: 200, nome: "João" }]
         return [{ valor_diaria: 200, nome: "João" }]
       }
 
       if (sql.includes("INSERT INTO dias_trabalhados")) {
         if (shouldThrowDuplicate) {
-          const err = new Error("duplicate key") as Error & { code: string }
-          err.code = "23505"
-          throw err
+          throw new DbError("duplicate key", "23505")
         }
         return mockQuery()
       }
 
       return []
     }
-    fn.append = vi.fn()
     return fn
   }),
 }))

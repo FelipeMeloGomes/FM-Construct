@@ -8,7 +8,6 @@ vi.mock("@/lib/db", () => ({
       if (sql.includes("INSERT INTO trabalhadores")) return mockInsert()
       return []
     }
-    fn.append = vi.fn()
     return fn
   }),
 }))

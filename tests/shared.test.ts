@@ -6,7 +6,9 @@ describe("parseError", () => {
   it("retorna fieldErrors para ZodError", () => {
     const schema = z.object({ nome: z.string().min(3) })
     const result = schema.safeParse({ nome: "ab" })
-    const parsed = parseError(result.error!)
+    if (result.success) throw new Error("Expected parse failure")
+
+    const parsed = parseError(result.error)
 
     expect(parsed.success).toBe(false)
     expect(parsed.error).toBeTruthy()
@@ -19,11 +21,14 @@ describe("parseError", () => {
       email: z.string().email(),
     })
     const result = schema.safeParse({ nome: "ab", email: "invalido" })
-    const parsed = parseError(result.error!)
+    if (result.success) throw new Error("Expected parse failure")
+
+    const parsed = parseError(result.error)
+    const fieldErrorCount = Object.keys(parsed.fieldErrors ?? {}).length
 
     expect(parsed.success).toBe(false)
     expect(parsed.error).toBeTruthy()
-    expect(Object.keys(parsed.fieldErrors!).length).toBe(2)
+    expect(fieldErrorCount).toBe(2)
   })
 
   it("retorna mensagem para Error comum", () => {
