@@ -18,7 +18,6 @@ jobs:
       - run: pnpm lint
 
   test:
-    needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +30,7 @@ jobs:
       - run: pnpm test
 
   build:
-    needs: test
+    needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -4,8 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { HardHat, DollarSign, Clock, TrendingUp, Construction, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { DashboardCharts } from "@/components/dashboard/charts"
+import dynamic from "next/dynamic"
 import { MonthlyExportCard } from "@/components/dashboard/monthly-export-card"
+
+const DashboardCharts = dynamic(
+  () => import("@/components/dashboard/charts").then((m) => m.DashboardCharts)
+)
 
 export async function DashboardContent() {
   const db = await getDb()
