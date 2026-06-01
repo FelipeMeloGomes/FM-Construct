@@ -1,4 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
+import type { ActionResult } from "@/lib/actions/shared"
+
+function assertIsError(r: ActionResult): asserts r is {
+  success: false
+  error: string
+  fieldErrors?: Record<string, string[]>
+} {
+  if (r.success) throw new Error("Expected failure, got success")
+}
 
 const mockInsert = vi.fn()
 vi.mock("@/lib/db", () => ({
@@ -50,25 +59,28 @@ describe("criarTrabalhador", () => {
 
   it("retorna erro quando nome tem menos de 3 caracteres", async () => {
     const result = await criarTrabalhador(makeFormData({ nome: "ab" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.nome).toBeDefined()
     expect(mockInsert).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando função é inválida", async () => {
     const result = await criarTrabalhador(makeFormData({ funcao: "encanador" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.funcao).toBeDefined()
     expect(mockInsert).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando valor da diária é negativo", async () => {
     const result = await criarTrabalhador(makeFormData({ valor_diaria: "-50" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.valor_diaria).toBeDefined()
     expect(mockInsert).not.toHaveBeenCalled()
   })
 })

@@ -1,4 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
+import type { ActionResult } from "@/lib/actions/shared"
+
+function assertIsError(r: ActionResult): asserts r is {
+  success: false
+  error: string
+  fieldErrors?: Record<string, string[]>
+} {
+  if (r.success) throw new Error("Expected failure, got success")
+}
 
 let shouldThrowDuplicate = false
 const mockQuery = vi.fn()
@@ -79,17 +88,19 @@ describe("registrarDia", () => {
 
   it("retorna erro para data vazia", async () => {
     const result = await registrarDia(makeFormData({ data: "" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.data).toBeDefined()
     expect(mockQuery).not.toHaveBeenCalled()
   })
 
   it("retorna erro para tipo inválido", async () => {
     const result = await registrarDia(makeFormData({ tipo: "triplo" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.tipo).toBeDefined()
     expect(mockQuery).not.toHaveBeenCalled()
   })
 
@@ -97,8 +108,8 @@ describe("registrarDia", () => {
     shouldThrowDuplicate = true
 
     const result = await registrarDia(makeFormData())
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
     expect(result.error).toContain("já tem registro no dia")
   })
 })

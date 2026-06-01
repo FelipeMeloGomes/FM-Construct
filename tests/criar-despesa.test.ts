@@ -1,4 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
+import type { ActionResult } from "@/lib/actions/shared"
+
+function assertIsError(r: ActionResult): asserts r is {
+  success: false
+  error: string
+  fieldErrors?: Record<string, string[]>
+} {
+  if (r.success) throw new Error("Expected failure, got success")
+}
 
 const mockInsert = vi.fn()
 vi.mock("@/lib/db", () => ({
@@ -51,33 +60,37 @@ describe("criarDespesa", () => {
 
   it("retorna erro quando descrição tem menos de 3 caracteres", async () => {
     const result = await criarDespesa(makeFormData({ descricao: "ab" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.descricao).toBeDefined()
     expect(mockInsert).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando valor é zero", async () => {
     const result = await criarDespesa(makeFormData({ valor: "0" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.valor).toBeDefined()
     expect(mockInsert).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando valor é negativo", async () => {
     const result = await criarDespesa(makeFormData({ valor: "-10" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.valor).toBeDefined()
     expect(mockInsert).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando categoria é inválida", async () => {
     const result = await criarDespesa(makeFormData({ categoria: "inexistente" }))
+    assertIsError(result)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.categoria).toBeDefined()
     expect(mockInsert).not.toHaveBeenCalled()
   })
 })

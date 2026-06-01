@@ -1,6 +1,14 @@
 import { describe, it, expect } from "vitest"
 import { z } from "zod"
-import { parseError } from "@/lib/actions/shared"
+import { parseError, type ActionResult } from "@/lib/actions/shared"
+
+function assertIsError(r: ActionResult): asserts r is {
+  success: false
+  error: string
+  fieldErrors?: Record<string, string[]>
+} {
+  if (r.success) throw new Error("Expected failure, got success")
+}
 
 describe("parseError", () => {
   it("retorna fieldErrors para ZodError", () => {
@@ -9,9 +17,9 @@ describe("parseError", () => {
     if (result.success) throw new Error("Expected parse failure")
 
     const parsed = parseError(result.error)
+    assertIsError(parsed)
 
-    expect(parsed.success).toBe(false)
-    expect(parsed.error).toBeTruthy()
+    expect(parsed.error).toContain("expected string to have >=3 characters")
     expect(parsed.fieldErrors?.nome).toBeDefined()
   })
 
@@ -24,24 +32,24 @@ describe("parseError", () => {
     if (result.success) throw new Error("Expected parse failure")
 
     const parsed = parseError(result.error)
-    const fieldErrorCount = Object.keys(parsed.fieldErrors ?? {}).length
+    assertIsError(parsed)
 
-    expect(parsed.success).toBe(false)
-    expect(parsed.error).toBeTruthy()
-    expect(fieldErrorCount).toBe(2)
+    expect(parsed.error).toContain("expected string to have >=3 characters")
+    expect(parsed.fieldErrors?.nome).toBeDefined()
+    expect(parsed.fieldErrors?.email).toBeDefined()
   })
 
   it("retorna mensagem para Error comum", () => {
     const parsed = parseError(new Error("Algo deu errado"))
+    assertIsError(parsed)
 
-    expect(parsed.success).toBe(false)
     expect(parsed.error).toBe("Algo deu errado")
   })
 
   it("retorna mensagem genérica para erro desconhecido", () => {
     const parsed = parseError("string qualquer")
+    assertIsError(parsed)
 
-    expect(parsed.success).toBe(false)
     expect(parsed.error).toBe("Erro desconhecido")
   })
 })
