@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { toast } from "sonner"
 import { atualizarDia } from "@/lib/actions/dias"
-import { formatCurrency, toDateInputValue } from "@/lib/utils"
+import { toDateInputValue } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,

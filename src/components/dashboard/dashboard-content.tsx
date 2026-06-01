@@ -1,7 +1,7 @@
 import { getDb } from "@/lib/db"
 import { formatCurrency } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { HardHat, DollarSign, Clock, TrendingUp, Calendar, Construction, ArrowRight } from "lucide-react"
+import { HardHat, DollarSign, Clock, TrendingUp, Construction, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { DashboardCharts } from "@/components/dashboard/charts"
@@ -137,7 +137,7 @@ export async function DashboardContent() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((card, i) => {
+        {cards.map((card) => {
           const Icon = card.icon
           return (
             <Link key={card.title} href={card.href} className="animate-fade-in-up delay-1">
@@ -195,7 +195,7 @@ export async function DashboardContent() {
             </CardHeader>
             <CardContent>
               <div className="divide-y divide-border/50">
-                {ultimosPagamentos.map((p, i: number) => (
+                {ultimosPagamentos.map((p) => (
                   <div
                     key={p.id}
                     className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0"

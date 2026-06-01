@@ -11,14 +11,6 @@ import { EditarDiaDialog } from "@/components/trabalhadores/editar-dia-dialog"
 import { Trash2 } from "lucide-react"
 import { deletarDia, pagarSemana } from "@/lib/actions/dias"
 
-function getWeekStart(date: Date): string {
-  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-  const day = d.getUTCDay()
-  const diff = d.getUTCDate() - day + (day === 0 ? -6 : 1)
-  d.setUTCDate(diff)
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`
-}
-
 function formatWeekRange(date: Date): string {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
   const day = d.getUTCDay()

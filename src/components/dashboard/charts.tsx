@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useMemo, useSyncExternalStore } from "react"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, type ChartOptions } from "chart.js"
 import { Bar, Doughnut } from "react-chartjs-2"
 import { useTheme } from "@/components/theme/theme-provider"
@@ -88,28 +88,17 @@ function ChartsSkeleton() {
 
 export function DashboardCharts({ monthlyData, categoryData }: ChartsProps) {
   const { theme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-  const [colors, setColors] = useState({ text: "#94a3b8", grid: "#334155", card: "#1e293b" })
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
   const barRef = useRef<ChartJS<"bar">>(null)
   const doughnutRef = useRef<ChartJS<"doughnut">>(null)
 
-  useEffect(() => {
-    setMounted(true)
-    setColors({
-      text: readCSSVar("--muted-foreground", "#94a3b8"),
-      grid: readCSSVar("--border", "#334155"),
-      card: readCSSVar("--card", "#1e293b"),
-    })
-  }, [])
-
-  useEffect(() => {
-    if (!mounted) return
-    const c = {
+  const colors = useMemo(() => {
+    if (!mounted) return { text: "#94a3b8", grid: "#334155", card: "#1e293b" }
+    return {
       text: readCSSVar("--muted-foreground", theme === "dark" ? "#94a3b8" : "#64748b"),
       grid: readCSSVar("--border", theme === "dark" ? "#334155" : "#e2e8f0"),
       card: readCSSVar("--card", theme === "dark" ? "#1e293b" : "#ffffff"),
     }
-    setColors(c)
   }, [theme, mounted])
 
   const meses = getLast6Months()

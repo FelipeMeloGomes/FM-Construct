@@ -13,8 +13,6 @@ const loginSchema = z.object({
 })
 
 export async function loginAction(formData: FormData): Promise<ActionResult> {
-  const redirectTo = (formData.get("redirect") as string) || "/"
-
   const parsed = loginSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return { success: false, error: "Preencha todos os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
