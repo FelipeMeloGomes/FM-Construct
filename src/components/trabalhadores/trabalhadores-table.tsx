@@ -213,9 +213,9 @@ export function TrabalhadoresTable({ trabalhadores }: Props) {
                   />
                 </TableCell>
                 <TableCell>
-                  <TransitionLink href={`/trabalhadores/${t.id}`} type="nav-forward" className="group inline-flex items-center gap-1 font-medium hover:text-amber-400 transition-colors">
+                  <TransitionLink href={`/trabalhadores/${t.id}`} type="nav-forward" className="group inline-flex items-center gap-1 font-medium hover:text-primary transition-colors">
                     {t.nome}
-                    <ChevronRight className="size-3.5 text-slate-500 sm:opacity-0 sm:-ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                    <ChevronRight className="size-3.5 text-muted-foreground sm:opacity-0 sm:-ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all" />
                   </TransitionLink>
                 </TableCell>
                 <TableCell className="hidden md:table-cell capitalize">{t.funcao}</TableCell>
@@ -225,7 +225,7 @@ export function TrabalhadoresTable({ trabalhadores }: Props) {
                     {t.ativo ? "Ativo" : "Inativo"}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right font-medium text-red-400">
+                <TableCell className="text-right font-medium text-destructive">
                   {formatCurrency(Number(t.total_pendente))}
                 </TableCell>
                 <TableCell>
@@ -233,7 +233,7 @@ export function TrabalhadoresTable({ trabalhadores }: Props) {
                     <RegistrarDiaDialog
                       trabalhadorId={t.id}
                       valorDiaria={Number(t.valor_diaria)}
-                      trigger={<Button variant="ghost" size="icon" className="size-9 md:size-8 text-emerald-400 hover:text-emerald-300 cursor-pointer" aria-label="Registrar dia">
+                      trigger={<Button variant="ghost" size="icon" className="size-9 md:size-8 text-success hover:text-success/80 cursor-pointer" aria-label="Registrar dia">
                         <Plus className="size-4" />
                       </Button>}
                     />
@@ -248,7 +248,7 @@ export function TrabalhadoresTable({ trabalhadores }: Props) {
                       description="Todos os dias registrados e pagamentos serão removidos. Esta ação não pode ser desfeita."
                       successMessage="Trabalhador excluído"
                     >
-                      <Button variant="ghost" size="icon" className="size-9 md:size-8 text-slate-500 hover:text-red-400 cursor-pointer" aria-label="Excluir trabalhador">
+                      <Button variant="ghost" size="icon" className="size-9 md:size-8 text-muted-foreground hover:text-destructive cursor-pointer" aria-label="Excluir trabalhador">
                         <Trash2 className="size-4 md:size-3.5" />
                       </Button>
                     </ConfirmDialog>

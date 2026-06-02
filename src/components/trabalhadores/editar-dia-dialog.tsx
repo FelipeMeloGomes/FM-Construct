@@ -50,7 +50,7 @@ export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setFieldErrors(undefined) }}>
-      <DialogTrigger render={<Button variant="ghost" size="icon" className="size-9 sm:size-7 text-slate-500 hover:text-amber-400 cursor-pointer" aria-label="Editar dia">
+      <DialogTrigger render={<Button variant="ghost" size="icon" className="size-9 sm:size-7 text-muted-foreground hover:text-primary cursor-pointer" aria-label="Editar dia">
         <Pencil className="size-4 sm:size-3.5" />
       </Button>} />
       <DialogContent className="top-1/2 left-1/2 bottom-auto -translate-x-1/2 -translate-y-1/2 rounded-xl">
@@ -83,8 +83,8 @@ export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
                 </RadioGroup>
               </div>
 
-              <div className="rounded-lg bg-amber-500/10 p-3 text-sm">
-                Valor calculado: <strong className="text-amber-400">R$ {valorCalculado.toFixed(2)}</strong>
+              <div className="rounded-lg bg-primary/10 p-3 text-sm">
+                Valor calculado: <strong className="text-primary">R$ {valorCalculado.toFixed(2)}</strong>
               </div>
 
               {dia.pago && Number(dia.valor_pago ?? 0) > 0 && (

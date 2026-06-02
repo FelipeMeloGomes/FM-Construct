@@ -36,7 +36,7 @@ export function BulkDeleteBar({ selectedCount, onDelete, onClear, entityLabel }:
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-2.5">
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-2.5">
       <span className="text-sm text-foreground">
         <strong>{selectedCount}</strong> {entityLabel}{selectedCount !== 1 ? "s" : ""} selecionado{selectedCount !== 1 ? "s" : ""}
       </span>

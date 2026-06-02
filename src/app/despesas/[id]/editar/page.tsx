@@ -47,8 +47,8 @@ export default async function EditarDespesaPage({ params }: { params: Promise<{ 
           </Button>
         </TransitionLink>
         <div>
-          <h1 className="text-2xl font-bold text-amber-400">Editar Despesa</h1>
-          <p className="text-sm text-slate-400 mt-1">Altere os dados da despesa</p>
+          <h1 className="text-2xl font-bold text-primary">Editar Despesa</h1>
+          <p className="text-sm text-muted-foreground mt-1">Altere os dados da despesa</p>
         </div>
       </div>
 

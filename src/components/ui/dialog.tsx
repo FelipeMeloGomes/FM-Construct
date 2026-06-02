@@ -39,13 +39,23 @@ function DialogOverlay({
   )
 }
 
+const dialogSizeClasses = {
+  sm: "sm:max-w-sm",
+  default: "sm:max-w-lg",
+  lg: "sm:max-w-xl",
+  xl: "sm:max-w-3xl",
+  full: "sm:max-w-[calc(100%-2rem)]",
+} as const
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
+  size = "sm",
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
+  size?: keyof typeof dialogSizeClasses
 }) {
   return (
     <DialogPortal>
@@ -53,7 +63,9 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 grid w-full max-w-full gap-4 rounded-t-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:top-1/2 sm:left-1/2 sm:bottom-auto sm:max-w-[calc(100%-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "fixed inset-x-0 bottom-0 z-50 grid w-full max-w-full gap-4 rounded-t-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:top-1/2 sm:left-1/2 sm:bottom-auto sm:max-w-[calc(100%-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl",
+          dialogSizeClasses[size],
+          "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}

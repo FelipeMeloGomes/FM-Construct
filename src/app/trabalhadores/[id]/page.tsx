@@ -92,12 +92,12 @@ export default async function TrabalhadorDetalhePage(props: {
         </TransitionLink>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-amber-400">{t.nome}</h1>
+            <h1 className="text-2xl font-bold text-primary">{t.nome}</h1>
             <Badge variant={t.ativo ? "default" : "secondary"} className="capitalize">
               {t.ativo ? "Ativo" : "Inativo"}
             </Badge>
           </div>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             <span className="capitalize">{t.funcao}</span> &mdash; Diária: {formatCurrency(Number(t.valor_diaria))}
           </p>
         </div>
@@ -125,26 +125,26 @@ export default async function TrabalhadorDetalhePage(props: {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400">Total Devido</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Total Devido</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xl font-bold text-amber-400">{formatCurrency(totalDevido)}</p>
+            <p className="text-xl font-bold text-primary">{formatCurrency(totalDevido)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400">Total Pago</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Total Pago</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xl font-bold text-emerald-400">{formatCurrency(totalPago)}</p>
+            <p className="text-xl font-bold text-success">{formatCurrency(totalPago)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400">Pendente</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Pendente</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xl font-bold text-red-400">{formatCurrency(totalPendente)}</p>
+            <p className="text-xl font-bold text-destructive">{formatCurrency(totalPendente)}</p>
           </CardContent>
         </Card>
       </div>
@@ -153,7 +153,7 @@ export default async function TrabalhadorDetalhePage(props: {
         <div>
           <h2 className="text-lg font-semibold">Dias Trabalhados</h2>
           {dias.length > 0 && (
-            <p className="text-xs text-slate-500 mt-0.5">{dias.length} dia{dias.length > 1 ? "s" : ""} registrado{dias.length > 1 ? "s" : ""} &mdash; Página {paginaSegura} de {totalPaginas}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{dias.length} dia{dias.length > 1 ? "s" : ""} registrado{dias.length > 1 ? "s" : ""} &mdash; Página {paginaSegura} de {totalPaginas}</p>
           )}
         </div>
         <RegistrarDiaDialog trabalhadorId={t.id} valorDiaria={Number(t.valor_diaria)} />
@@ -161,7 +161,7 @@ export default async function TrabalhadorDetalhePage(props: {
 
       {dias.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center text-slate-500">
+          <CardContent className="py-8 text-center text-muted-foreground">
             Nenhum dia registrado ainda
           </CardContent>
         </Card>
@@ -187,9 +187,9 @@ export default async function TrabalhadorDetalhePage(props: {
             return (
               <div key={mes}>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-slate-400">{nomeMesCapitalizado}</h3>
-                  <div className="text-xs text-slate-500">
-                    {diasInteiros}d inteiros {meiosDias > 0 ? `+ ${meiosDias} meio(s)` : ""} &mdash; Total: <span className="text-amber-400 font-medium">{formatCurrency(totalMes)}</span>
+                  <h3 className="text-sm font-medium text-muted-foreground">{nomeMesCapitalizado}</h3>
+                  <div className="text-xs text-muted-foreground">
+                    {diasInteiros}d inteiros {meiosDias > 0 ? `+ ${meiosDias} meio(s)` : ""} &mdash; Total: <span className="text-primary font-medium">{formatCurrency(totalMes)}</span>
                   </div>
                 </div>
                 <div className="space-y-4">
@@ -215,8 +215,8 @@ export default async function TrabalhadorDetalhePage(props: {
           <Card className="border-primary/10">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/10">
-                  <DollarSign className="size-3.5 text-emerald-500" />
+                <div className="flex size-7 items-center justify-center rounded-lg bg-success/10">
+                  <DollarSign className="size-3.5 text-success" />
                 </div>
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Histórico de Pagamentos
@@ -232,7 +232,7 @@ export default async function TrabalhadorDetalhePage(props: {
                       <span className="font-medium">{formatDate(pg.data)}</span>
                       <span className="text-xs text-muted-foreground">{pg.dias.length} dia{pg.dias.length > 1 ? "s" : ""}</span>
                     </div>
-                    <span className="font-semibold text-emerald-500">{formatCurrency(pg.total)}</span>
+                    <span className="font-semibold text-success">{formatCurrency(pg.total)}</span>
                   </summary>
                   <div className="border-t border-border/50 px-3 py-2">
                     <div className="divide-y divide-border/30 text-xs">

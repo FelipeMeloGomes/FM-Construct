@@ -37,9 +37,9 @@ export default async function DespesasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-amber-400">Despesas</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Total: <span className="text-blue-400 font-medium">{formatCurrency(totalGeral)}</span>
+          <h1 className="text-2xl font-bold text-primary">Despesas</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Total: <span className="text-info font-medium">{formatCurrency(totalGeral)}</span>
           </p>
         </div>
         <TransitionLink href="/despesas/nova" type="nav-forward">
@@ -58,7 +58,7 @@ export default async function DespesasPage() {
             return (
               <Card key={categoria}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs text-slate-400">{cat?.label || categoria}</CardTitle>
+                  <CardTitle className="text-xs text-muted-foreground">{cat?.label || categoria}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-base font-bold">{formatCurrency(Number(t.total))}</p>
@@ -70,7 +70,7 @@ export default async function DespesasPage() {
       )}
 
       {despesas.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <Receipt className="h-12 w-12 mb-4" />
           <p className="text-lg font-medium">Nenhuma despesa registrada</p>
           <p className="text-sm mt-1">Registre a primeira despesa da obra</p>

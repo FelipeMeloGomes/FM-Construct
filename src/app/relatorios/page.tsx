@@ -79,12 +79,12 @@ export default async function RelatoriosPage(props: {
     <DirectionalTransition>
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-amber-400">Relatórios</h1>
-        <p className="text-sm text-slate-400 mt-1">Exporte os dados da obra</p>
+        <h1 className="text-2xl font-bold text-primary">Relatórios</h1>
+        <p className="text-sm text-muted-foreground mt-1">Exporte os dados da obra</p>
       </div>
 
       {!anyData.has_trabalhadores && !anyData.has_despesas ? (
-        <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <FileText className="h-12 w-12 mb-4" />
           <p className="text-lg font-medium">Nenhum dado cadastrado</p>
           <p className="text-sm mt-1">Adicione trabalhadores ou despesas para gerar relatórios</p>
@@ -96,7 +96,7 @@ export default async function RelatoriosPage(props: {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm text-slate-400">
+          <CardTitle className="text-sm text-muted-foreground">
             {mesFiltro
               ? `Resumo — ${new Date(mesFiltro + "-01").toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" })}`
               : "Resumo Geral"}
@@ -104,20 +104,20 @@ export default async function RelatoriosPage(props: {
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="text-xs text-slate-500">Total Trabalhadores</p>
+            <p className="text-xs text-muted-foreground">Total Trabalhadores</p>
             <p className="text-lg font-bold">{r.total_trabalhadores}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500">Total Devido</p>
-            <p className="text-lg font-bold text-amber-400">{formatCurrency(Number(r.total_devido))}</p>
+            <p className="text-xs text-muted-foreground">Total Devido</p>
+            <p className="text-lg font-bold text-primary">{formatCurrency(Number(r.total_devido))}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500">Total Pago</p>
-            <p className="text-lg font-bold text-emerald-400">{formatCurrency(Number(r.total_pago))}</p>
+            <p className="text-xs text-muted-foreground">Total Pago</p>
+            <p className="text-lg font-bold text-success">{formatCurrency(Number(r.total_pago))}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500">Total Despesas</p>
-            <p className="text-lg font-bold text-blue-400">{formatCurrency(Number(d.total_despesas))}</p>
+            <p className="text-xs text-muted-foreground">Total Despesas</p>
+            <p className="text-lg font-bold text-info">{formatCurrency(Number(d.total_despesas))}</p>
           </div>
         </CardContent>
       </Card>
@@ -128,7 +128,7 @@ export default async function RelatoriosPage(props: {
             <CardTitle>Trabalhadores</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-muted-foreground">
               Relatório completo com todos os trabalhadores, dias trabalhados, valores devidos e pagamentos.
             </p>
             <div className="flex flex-wrap gap-2">
@@ -165,7 +165,7 @@ export default async function RelatoriosPage(props: {
             <CardTitle>Despesas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-muted-foreground">
               Relatório completo com todas as despesas categorizadas por tipo.
             </p>
             <div className="flex flex-wrap gap-2">
@@ -202,7 +202,7 @@ export default async function RelatoriosPage(props: {
             <CardTitle>Relatório Geral</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-muted-foreground">
               Relatório completo da obra incluindo trabalhadores, pagamentos e despesas em um único arquivo.
             </p>
             <div className="flex flex-wrap gap-2">

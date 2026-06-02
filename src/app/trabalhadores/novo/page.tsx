@@ -48,8 +48,8 @@ export default function NovoTrabalhadorPage() {
             </Button>
           </TransitionLink>
         <div>
-          <h1 className="text-2xl font-bold text-amber-400">Novo Trabalhador</h1>
-          <p className="text-sm text-slate-400 mt-1">Cadastre um pedreiro ou servente</p>
+          <h1 className="text-2xl font-bold text-primary">Novo Trabalhador</h1>
+          <p className="text-sm text-muted-foreground mt-1">Cadastre um pedreiro ou servente</p>
         </div>
       </div>
 

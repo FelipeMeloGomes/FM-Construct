@@ -39,7 +39,7 @@ export function SemanaGroup({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h4 className="text-xs font-medium text-slate-500">
+        <h4 className="text-xs font-medium text-muted-foreground">
           Semana de {formatWeekRange(new Date(diasDaSemana[0].data))}
         </h4>
         {hasPendentes && (
@@ -77,13 +77,9 @@ export function SemanaGroup({
               <TableCell>{formatCurrency(Number(d.valor_dia))}</TableCell>
               <TableCell>
                 {Number(d.valor_pago ?? 0) >= Number(d.valor_dia) ? (
-                  <Badge variant="default" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                    Pago
-                  </Badge>
+                  <Badge variant="success">Pago</Badge>
                 ) : Number(d.valor_pago ?? 0) > 0 ? (
-                  <Badge variant="default" className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                    Parcial
-                  </Badge>
+                  <Badge variant="warning">Parcial</Badge>
                 ) : (
                   <Badge variant="destructive">Pendente</Badge>
                 )}
@@ -102,7 +98,7 @@ export function SemanaGroup({
                     description={`Remover ${formatDate(d.data)} (${d.tipo === "inteiro" ? "Dia inteiro" : "Meio dia"})?`}
                     successMessage="Dia excluído"
                   >
-                    <Button variant="ghost" size="icon" className="size-9 sm:size-7 text-slate-500 hover:text-red-400 cursor-pointer" aria-label="Excluir dia">
+                    <Button variant="ghost" size="icon" className="size-9 sm:size-7 text-muted-foreground hover:text-destructive cursor-pointer" aria-label="Excluir dia">
                       <Trash2 className="size-4 sm:size-3.5" />
                     </Button>
                   </ConfirmDialog>

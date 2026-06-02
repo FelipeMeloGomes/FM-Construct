@@ -81,8 +81,8 @@ export function RegistrarDiaDialog({ trabalhadorId, valorDiaria, trigger }: Regi
                 <Input id="observacao" name="observacao" placeholder="Ex: Só trabalhou até o almoço" />
               </div>
 
-              <div className="rounded-lg bg-amber-500/10 p-3 text-sm">
-                Valor calculado: <strong className="text-amber-400">
+              <div className="rounded-lg bg-primary/10 p-3 text-sm">
+                Valor calculado: <strong className="text-primary">
                   R$ {valorCalculado.toFixed(2)}
                 </strong>
               </div>

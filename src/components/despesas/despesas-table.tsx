@@ -224,14 +224,14 @@ export function DespesasTable({ despesas }: Props) {
                     {CATEGORIAS_DESPESA.find((c) => c.value === d.categoria)?.label || d.categoria}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell text-slate-400">{d.pago_para || <span className="text-muted-foreground/60 text-xs">Sem pgto</span>}</TableCell>
+                <TableCell className="hidden sm:table-cell text-muted-foreground">{d.pago_para || <span className="text-muted-foreground/60 text-xs">Sem pgto</span>}</TableCell>
                 <TableCell className="text-right font-medium">
                   {formatCurrency(Number(d.valor))}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <TransitionLink href={`/despesas/${d.id}/editar`} type="nav-forward">
-                      <Button variant="ghost" size="icon" className="size-8 text-slate-500 hover:text-amber-400 cursor-pointer" aria-label="Editar despesa">
+                      <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-primary cursor-pointer" aria-label="Editar despesa">
                         <Edit className="size-3.5" />
                       </Button>
                     </TransitionLink>
@@ -241,7 +241,7 @@ export function DespesasTable({ despesas }: Props) {
                       description={`Remover "${d.descricao}" no valor de ${formatCurrency(Number(d.valor))}?`}
                       successMessage="Despesa excluída"
                     >
-                      <Button variant="ghost" size="icon" className="size-8 text-slate-500 hover:text-red-400 cursor-pointer" aria-label="Excluir despesa">
+                      <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive cursor-pointer" aria-label="Excluir despesa">
                         <Trash2 className="size-3.5" />
                       </Button>
                     </ConfirmDialog>

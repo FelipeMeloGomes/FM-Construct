@@ -65,9 +65,9 @@ export function MonthlyExportCard({ nomeMes, pago, pendente, despesas }: Monthly
         <CardContent>
           <div ref={ref} className="grid gap-4 sm:grid-cols-3 p-1">
             {[
-              { label: "Pago em Trabalhadores", value: pago, color: "text-emerald-500" },
-              { label: "Pendente", value: pendente, color: "text-red-500" },
-              { label: "Despesas", value: despesas, color: "text-blue-500" },
+              { label: "Pago em Trabalhadores", value: pago, color: "text-success" },
+              { label: "Pendente", value: pendente, color: "text-destructive" },
+              { label: "Despesas", value: despesas, color: "text-info" },
             ].map((item) => (
               <div key={item.label} className="space-y-0.5">
                 <p className="text-xs text-muted-foreground/70">{item.label}</p>

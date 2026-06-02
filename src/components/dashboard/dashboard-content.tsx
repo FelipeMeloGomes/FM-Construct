@@ -205,12 +205,12 @@ export async function DashboardContent() {
                     className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="flex size-7 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-500">
+                      <div className="flex size-7 items-center justify-center rounded-full bg-success/10 text-[10px] font-bold text-success">
                         {p.trabalhador_nome.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-sm font-medium text-foreground">{p.trabalhador_nome}</span>
                     </div>
-                    <span className="text-sm font-semibold text-emerald-500">
+                    <span className="text-sm font-semibold text-success">
                       {formatCurrency(Number(p.valor_pago))}
                     </span>
                   </div>

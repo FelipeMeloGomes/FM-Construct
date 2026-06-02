@@ -3,53 +3,126 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* === PRIMITIVE TOKENS === */
 :root {
-  --background: oklch(0.97 0.01 68);
-  --foreground: oklch(0.16 0.012 285);
-  --card: oklch(0.992 0.004 60);
-  --card-foreground: oklch(0.16 0.012 285);
-  --popover: oklch(0.992 0.004 60);
-  --popover-foreground: oklch(0.16 0.012 285);
-  --primary: oklch(0.7 0.22 68);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.91 0.012 68);
-  --secondary-foreground: oklch(0.22 0.015 285);
-  --muted: oklch(0.93 0.01 66);
-  --muted-foreground: oklch(0.45 0.018 285);
-  --accent: oklch(0.91 0.012 68);
-  --accent-foreground: oklch(0.22 0.015 285);
-  --destructive: oklch(0.58 0.22 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.83 0.012 66);
-  --input: oklch(0.83 0.012 66);
-  --ring: oklch(0.7 0.22 68);
+  --white: oklch(0.99 0 0);
+  --black: oklch(0 0 0);
+
+  --amber-25: oklch(0.992 0.004 60);
+  --amber-50: oklch(0.97 0.01 68);
+  --amber-75: oklch(0.93 0.01 66);
+  --amber-100: oklch(0.91 0.012 68);
+  --amber-200: oklch(0.83 0.012 66);
+  --amber-400: oklch(0.76 0.19 70);
+  --amber-500: oklch(0.7 0.22 68);
+
+  --slate-400: oklch(0.65 0.015 285);
+  --slate-500: oklch(0.45 0.018 285);
+  --slate-800: oklch(0.22 0.012 285);
+  --slate-900: oklch(0.16 0.012 285);
+  --slate-950: oklch(0.13 0.008 285);
+
+  --red-500: oklch(0.58 0.22 27);
+
+  --green-500: oklch(0.62 0.19 149);
+  --green-400: oklch(0.72 0.16 149);
+
+  --yellow-500: oklch(0.78 0.14 90);
+  --yellow-400: oklch(0.85 0.12 90);
+
+  --blue-500: oklch(0.62 0.19 249);
+  --blue-400: oklch(0.72 0.16 249);
+
+  --primary-dark-fg: oklch(0.15 0.09 70);
+  --card-light: oklch(0.992 0.004 60);
+  --card-dark: oklch(0.18 0.01 285);
+  --gradient-from-light: oklch(0.93 0.018 60);
+  --gradient-to-light: oklch(0.96 0.01 66);
+  --gradient-from-dark: oklch(0.1 0.01 285);
+  --gradient-to-dark: oklch(0.14 0.008 285);
+
+  /* === SEMANTIC TOKENS (Light) === */
+  --background: var(--amber-50);
+  --foreground: var(--slate-900);
+  --card: var(--card-light);
+  --card-foreground: var(--slate-900);
+  --popover: var(--card-light);
+  --popover-foreground: var(--slate-900);
+  --primary: var(--amber-500);
+  --primary-foreground: var(--white);
+  --secondary: var(--amber-100);
+  --secondary-foreground: var(--slate-800);
+  --muted: var(--amber-75);
+  --muted-foreground: var(--slate-500);
+  --accent: var(--amber-100);
+  --accent-foreground: var(--slate-800);
+  --destructive: var(--red-500);
+  --destructive-foreground: var(--white);
+  --border: var(--amber-200);
+  --input: var(--amber-200);
+  --ring: var(--amber-500);
   --radius: 0.625rem;
-  --gradient-from: oklch(0.93 0.018 60);
-  --gradient-to: oklch(0.96 0.01 66);
+  --gradient-from: var(--gradient-from-light);
+  --gradient-to: var(--gradient-to-light);
+
+  --success: var(--green-500);
+  --warning: var(--yellow-500);
+  --info: var(--blue-500);
+
+  /* === COMPONENT TOKENS === */
+  --button-bg: var(--primary);
+  --button-fg: var(--primary-foreground);
+  --button-hover-bg: color-mix(in oklch, var(--primary), var(--foreground) 20%);
+  --button-radius: var(--radius);
+  --button-padding-x: 0.625rem;
+  --button-padding-y: 0.25rem;
+
+  --card-padding: 1rem;
+  --card-radius: 0.75rem;
+  --card-gap: 1rem;
+
+  --input-height: 2rem;
+  --input-padding-x: 0.625rem;
+  --input-padding-y: 0.25rem;
+  --input-radius: var(--radius);
+
+  --dialog-padding: 1rem;
+  --dialog-radius: 0.75rem;
+  --dialog-gap: 1rem;
+
+  --badge-height: 1.25rem;
+  --badge-padding-x: 0.5rem;
+  --badge-font-size: 0.75rem;
+  --badge-radius: 9999px;
 }
 
 .dark {
-  --background: oklch(0.13 0.008 285);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.18 0.01 285);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.18 0.01 285);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.76 0.19 70);
-  --primary-foreground: oklch(0.15 0.09 70);
-  --secondary: oklch(0.22 0.012 285);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.22 0.012 285);
-  --muted-foreground: oklch(0.65 0.015 285);
-  --accent: oklch(0.22 0.012 285);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.58 0.22 27);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.28 0.012 285);
-  --input: oklch(0.28 0.012 285);
-  --ring: oklch(0.76 0.19 70);
-  --gradient-from: oklch(0.1 0.01 285);
-  --gradient-to: oklch(0.14 0.008 285);
+  /* === SEMANTIC TOKENS (Dark) === */
+  --background: var(--slate-950);
+  --foreground: var(--white);
+  --card: var(--card-dark);
+  --card-foreground: var(--white);
+  --popover: var(--card-dark);
+  --popover-foreground: var(--white);
+  --primary: var(--amber-400);
+  --primary-foreground: var(--primary-dark-fg);
+  --secondary: var(--slate-800);
+  --secondary-foreground: var(--white);
+  --muted: var(--slate-800);
+  --muted-foreground: var(--slate-400);
+  --accent: var(--slate-800);
+  --accent-foreground: var(--white);
+  --destructive: var(--red-500);
+  --destructive-foreground: var(--white);
+  --border: var(--slate-800);
+  --input: var(--slate-800);
+  --ring: var(--amber-400);
+  --gradient-from: var(--gradient-from-dark);
+  --gradient-to: var(--gradient-to-dark);
+
+  --success: var(--green-400);
+  --warning: var(--yellow-400);
+  --info: var(--blue-400);
 }
 
 @theme inline {
@@ -72,9 +145,16 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
   --radius: var(--radius);
   --font-sans: var(--font-sora);
   --font-mono: var(--font-dm-mono);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.1);
 }
 
 * {
@@ -241,7 +321,7 @@ body {
   background: oklch(0.7 0.22 68 / 0.2);
 }
 
-/* ---- View Transitions ---- */
+/* ---- Durations ---- */
 :root {
   --duration-exit: 150ms;
   --duration-enter: 210ms;
@@ -330,5 +410,22 @@ body {
   ::view-transition-group(*) {
     animation-duration: 0s !important;
     animation-delay: 0s !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .card-hover:hover {
+    transform: none;
+  }
+
+  .btn-glow::after {
+    transition: none;
   }
 }

@@ -49,8 +49,8 @@ export default function NovaDespesaPage() {
             </Button>
           </TransitionLink>
         <div>
-          <h1 className="text-2xl font-bold text-amber-400">Nova Despesa</h1>
-          <p className="text-sm text-slate-400 mt-1">Registre um gasto da obra</p>
+          <h1 className="text-2xl font-bold text-primary">Nova Despesa</h1>
+          <p className="text-sm text-muted-foreground mt-1">Registre um gasto da obra</p>
         </div>
       </div>
 

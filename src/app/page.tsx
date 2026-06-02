@@ -15,8 +15,8 @@ export default function DashboardPage() {
     <DirectionalTransition>
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-amber-400">Dashboard</h1>
-        <p className="text-sm text-slate-400 mt-1">Resumo geral da obra</p>
+        <h1 className="text-2xl font-bold text-primary">Dashboard</h1>
+        <p className="text-sm text-muted-foreground mt-1">Resumo geral da obra</p>
       </div>
 
       <Suspense fallback={<DashboardSkeleton />}>

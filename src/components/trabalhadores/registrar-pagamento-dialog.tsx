@@ -49,9 +49,9 @@ export function RegistrarPagamentoDialog({ diaId, valorDevido }: RegistrarPagame
               </DialogDescription>
             </DialogHeader>
             <form action={handleSubmit} className="space-y-4">
-              <div className="rounded-lg bg-emerald-500/10 p-4 text-center">
-                <p className="text-xs text-slate-400 mb-1">Valor devido</p>
-                <p className="text-2xl font-bold text-emerald-400">{formatCurrency(valorDevido)}</p>
+              <div className="rounded-lg bg-success/10 p-4 text-center">
+                <p className="text-xs text-muted-foreground mb-1">Valor devido</p>
+                <p className="text-2xl font-bold text-success">{formatCurrency(valorDevido)}</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="valor_pago">Valor pago (R$)</Label>

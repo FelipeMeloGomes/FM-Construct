@@ -57,16 +57,16 @@ export default function AnimatedBg() {
       </svg>
 
       {/* Light mode accent glow */}
-      <div className="absolute -top-40 left-1/2 size-96 -translate-x-1/2 rounded-full bg-amber-500/3 blur-[120px] dark:hidden" />
+      <div className="absolute -top-40 left-1/2 size-96 -translate-x-1/2 rounded-full bg-primary/3 blur-[120px] dark:hidden" />
 
       {/* Dark mode accent glow */}
-      <div className="absolute -top-40 left-1/2 size-96 -translate-x-1/2 rounded-full bg-amber-500/8 blur-[120px] hidden dark:block" />
+      <div className="absolute -top-40 left-1/2 size-96 -translate-x-1/2 rounded-full bg-primary/8 blur-[120px] hidden dark:block" />
 
       {/* Pickaxes (ambient floating) */}
       {pickaxes.map((icon) => (
         <div
           key={icon.id}
-          className="absolute text-amber-600/20 dark:text-amber-400/15"
+          className="absolute text-primary/20 dark:text-primary/15"
           style={{
             left: icon.x + "%",
             top: icon.y + "%",
@@ -81,7 +81,7 @@ export default function AnimatedBg() {
       {icons.map((icon) => (
         <div
           key={icon.id}
-          className="absolute text-amber-600/25 dark:text-amber-400/20"
+          className="absolute text-primary/25 dark:text-primary/20"
           style={{
             left: icon.x + "%",
             top: icon.y + "%",
