@@ -3,9 +3,31 @@ import { verifyToken } from "@/lib/auth"
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const isDev = process.env.NODE_ENV === "development"
 
-  if (pathname === "/login" || pathname.startsWith("/_next") || pathname === "/favicon.ico") {
-    return NextResponse.next()
+  const csp = [
+    `default-src 'self'`,
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+    `style-src 'self' 'unsafe-inline'`,
+    `img-src 'self' data: blob:`,
+    `font-src 'self' data:`,
+    `connect-src 'self'`,
+    `frame-ancestors 'none'`,
+    `report-uri /api/csp-report`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `object-src 'none'`,
+    `frame-src 'none'`,
+  ].join("; ")
+
+  function htmlResponse() {
+    const res = NextResponse.next()
+    res.headers.set("Content-Security-Policy", csp)
+    return res
+  }
+
+  if (pathname === "/login" || pathname === "/theme-init.js" || pathname.startsWith("/_next") || pathname === "/favicon.ico") {
+    return htmlResponse()
   }
 
   if (pathname.startsWith("/api/")) {
@@ -13,7 +35,7 @@ export default async function proxy(request: NextRequest) {
     if (!token || !(await verifyToken(token))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    return NextResponse.next()
+    return htmlResponse()
   }
 
   const token = request.cookies.get("fm_auth")?.value
@@ -24,7 +46,7 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  return NextResponse.next()
+  return htmlResponse()
 }
 
 export const config = {
