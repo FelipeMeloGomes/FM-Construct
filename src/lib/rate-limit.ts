@@ -1,3 +1,8 @@
+import "server-only"
+
+// NOTA: O IP é obtido via x-forwarded-for. Em self-host, um proxy reverso
+// (nginx, Cloudflare, etc.) DEVE sobrescrever esse header para evitar spoofing.
+// Na Vercel, isso é gerenciado automaticamente pela plataforma.
 import { getDb } from "@/lib/db"
 
 const MAX_ATTEMPTS = 10

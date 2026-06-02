@@ -1,5 +1,6 @@
 "use server"
 
+import "server-only"
 import { cookies, headers } from "next/headers"
 import { z } from "zod"
 import { createToken } from "@/lib/auth"
@@ -41,7 +42,7 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
 
   if (username !== expectedUser || password !== expectedPass) {
     await recordAttempt(ip, false)
-    logAudit("login_falhou", `Usuário: ${username}`)
+    logAudit("login_falhou")
     return { success: false, error: "Credenciais inválidas" }
   }
 
@@ -67,5 +68,13 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
   })
 
   logAudit("login_ok", "Login bem-sucedido")
+  return { success: true }
+}
+
+export async function logoutAction(): Promise<ActionResult> {
+  const cookieStore = await cookies()
+  cookieStore.set("fm_auth", "", { httpOnly: true, maxAge: 0, path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production" })
+  cookieStore.set("fm_sub", "", { httpOnly: true, maxAge: 0, path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production" })
+  logAudit("logout")
   return { success: true }
 }
