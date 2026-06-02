@@ -1,3 +1,5 @@
+import "server-only"
+
 type SqlTag = (strings: TemplateStringsArray, ...values: unknown[]) => Promise<Record<string, unknown>[]>
 
 let sql: SqlTag | null = null

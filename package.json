@@ -4,7 +4,12 @@
   "private": true,
   "packageManager": "pnpm@10.33.0",
   "pnpm": {
-    "onlyBuiltDependencies": ["core-js", "msw", "sharp", "unrs-resolver"]
+    "onlyBuiltDependencies": [
+      "core-js",
+      "msw",
+      "sharp",
+      "unrs-resolver"
+    ]
   },
   "scripts": {
     "dev": "next dev",
@@ -30,6 +35,7 @@
     "react-chartjs-2": "^5.3.1",
     "react-day-picker": "^9.6.2",
     "react-dom": "19.2.4",
+    "server-only": "^0.0.1",
     "shadcn": "^4.8.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
