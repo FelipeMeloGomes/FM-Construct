@@ -1,10 +1,14 @@
 import { sqlQuery, formatarData } from "./shared"
 
 function escapeCsv(value: string): string {
-  if (value.includes(",") || value.includes('"') || value.includes("\n")) {
-    return `"${value.replace(/"/g, '""')}"`
+  let sanitized = value
+  if (/^[=+\-@]/.test(sanitized)) {
+    sanitized = "'" + sanitized
   }
-  return value
+  if (sanitized.includes(",") || sanitized.includes('"') || sanitized.includes("\n")) {
+    return `"${sanitized.replace(/"/g, '""')}"`
+  }
+  return sanitized
 }
 
 export async function gerarCsv(type: string, mes: string | null): Promise<string> {

@@ -8,14 +8,27 @@ import { gerarTxt } from "@/lib/export/txt"
 import { gerarCsv } from "@/lib/export/csv"
 import { gerarPdf } from "@/lib/export/pdf"
 
+const EXPORT_TYPES = ["geral", "trabalhadores", "despesas"] as const
+type ExportType = (typeof EXPORT_TYPES)[number]
+
+const EXPORT_FORMATS = ["txt", "csv", "pdf"] as const
+type ExportFormat = (typeof EXPORT_FORMATS)[number]
+
+function isValid<T extends string>(value: string, allowed: readonly T[]): value is T {
+  return allowed.includes(value as T)
+}
+
 export async function GET(request: NextRequest) {
   if (!(await requireAuthApi(request))) {
     return Response.json({ error: "Unauthorized" }, { status: 401 })
   }
   const { searchParams } = request.nextUrl
-  const type = searchParams.get("type") || "geral"
-  const format = searchParams.get("format") || "txt"
-  const mes = searchParams.get("mes")
+  const rawType = searchParams.get("type") || "geral"
+  const type: ExportType = isValid(rawType, EXPORT_TYPES) ? rawType : "geral"
+  const rawFormat = searchParams.get("format") || "txt"
+  const format: ExportFormat = isValid(rawFormat, EXPORT_FORMATS) ? rawFormat : "txt"
+  const rawMes = searchParams.get("mes")
+  const mes = rawMes && /^\d{4}-\d{2}$/.test(rawMes) ? rawMes : null
 
   logAudit("exportar", `Formato: ${format}, Tipo: ${type}${mes ? `, Mês: ${mes}` : ""}`)
 

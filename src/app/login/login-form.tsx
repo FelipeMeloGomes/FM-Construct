@@ -11,7 +11,8 @@ import { FieldErrors, getFieldErrors } from "@/components/ui/field-error"
 export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get("redirect") || "/"
+  const rawRedirect = searchParams.get("redirect")
+  const redirectTo = rawRedirect && /^\/(?!\/)/.test(rawRedirect) ? rawRedirect : "/"
   const [showPassword, setShowPassword] = useState(false)
   const [serverError, setServerError] = useState("")
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>()
