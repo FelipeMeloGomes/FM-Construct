@@ -1,18 +1,15 @@
 import type { NextConfig } from "next";
+import { validateEnv } from "@/lib/env"
 
-const csp = [
-  `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
-  `style-src 'self' 'unsafe-inline'`,
-  `img-src 'self' data: blob:`,
-  `font-src 'self' data:`,
-  `connect-src 'self'`,
-  `frame-ancestors 'none'`,
-].join("; ")
+validateEnv()
 
 const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    serverActions: {
+      allowedOrigins: ["fm-construct.vercel.app", "localhost:3000"],
+      bodySizeLimit: "1mb",
+    },
   },
   async headers() {
     return [
@@ -29,10 +26,6 @@ const nextConfig: NextConfig = {
           {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
-          },
-          {
-            key: "Content-Security-Policy",
-            value: csp,
           },
         ],
       },
