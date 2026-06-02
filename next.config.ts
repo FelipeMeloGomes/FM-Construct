@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
     serverActions: {
-      allowedOrigins: ["fm-construct.vercel.app", "localhost:3000"],
       bodySizeLimit: "1mb",
     },
   },
