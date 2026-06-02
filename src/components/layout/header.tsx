@@ -1,11 +1,12 @@
 "use client"
 
-import { usePathname } from "next/navigation"
-import { HardHat } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { HardHat, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { navLinks } from "@/lib/navigation"
 import { TransitionLink } from "./transition-link"
+import { logoutAction } from "@/actions/auth"
 
 function isActive(href: string, pathname: string) {
   if (href === "/") return pathname === "/"
@@ -14,6 +15,12 @@ function isActive(href: string, pathname: string) {
 
 export function Header() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    await logoutAction()
+    router.push("/login")
+  }
 
   if (pathname.startsWith("/login")) return null
 
@@ -51,7 +58,15 @@ export function Header() {
               </TransitionLink>
             ))}
           </nav>
-          <div className="ml-2">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleLogout}
+              className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground hover:bg-accent/50 cursor-pointer"
+              aria-label="Sair"
+              title="Sair"
+            >
+              <LogOut className="size-4" />
+            </button>
             <ThemeToggle />
           </div>
         </div>

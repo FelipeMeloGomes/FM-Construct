@@ -67,7 +67,7 @@ export default async function RelatoriosPage(props: {
   const r = resumoTrabalhadores[0] as unknown as { total_trabalhadores: number; total_devido: number; total_pago: number; total_pendente: number }
   const d = resumoDespesas[0] as unknown as { total_despesas: number; qtd_despesas: number }
 
-  const exportParams = mesFiltro ? `&mes=${mesFiltro}` : ""
+  const exportParams = mesFiltro ? `&mes=${encodeURIComponent(mesFiltro)}` : ""
 
   const anyData = (await db`
     SELECT
@@ -132,7 +132,7 @@ export default async function RelatoriosPage(props: {
               Relatório completo com todos os trabalhadores, dias trabalhados, valores devidos e pagamentos.
             </p>
             <div className="flex flex-wrap gap-2">
-              <a href={`/api/export?type=trabalhadores&format=pdf${exportParams}`} target="_blank"
+              <a href={`/api/export?type=trabalhadores&format=pdf${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
@@ -140,7 +140,7 @@ export default async function RelatoriosPage(props: {
                   PDF
                 </Button>
               </a>
-              <a href={`/api/export?type=trabalhadores&format=txt${exportParams}`} target="_blank"
+              <a href={`/api/export?type=trabalhadores&format=txt${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
@@ -148,7 +148,7 @@ export default async function RelatoriosPage(props: {
                   TXT
                 </Button>
               </a>
-              <a href={`/api/export?type=trabalhadores&format=csv${exportParams}`} target="_blank"
+              <a href={`/api/export?type=trabalhadores&format=csv${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
@@ -169,7 +169,7 @@ export default async function RelatoriosPage(props: {
               Relatório completo com todas as despesas categorizadas por tipo.
             </p>
             <div className="flex flex-wrap gap-2">
-              <a href={`/api/export?type=despesas&format=pdf${exportParams}`} target="_blank"
+              <a href={`/api/export?type=despesas&format=pdf${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
@@ -177,7 +177,7 @@ export default async function RelatoriosPage(props: {
                   PDF
                 </Button>
               </a>
-              <a href={`/api/export?type=despesas&format=txt${exportParams}`} target="_blank"
+              <a href={`/api/export?type=despesas&format=txt${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
@@ -185,7 +185,7 @@ export default async function RelatoriosPage(props: {
                   TXT
                 </Button>
               </a>
-              <a href={`/api/export?type=despesas&format=csv${exportParams}`} target="_blank"
+              <a href={`/api/export?type=despesas&format=csv${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
@@ -206,7 +206,7 @@ export default async function RelatoriosPage(props: {
               Relatório completo da obra incluindo trabalhadores, pagamentos e despesas em um único arquivo.
             </p>
             <div className="flex flex-wrap gap-2">
-              <a href={`/api/export?type=geral&format=pdf${exportParams}`} target="_blank"
+              <a href={`/api/export?type=geral&format=pdf${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button className="cursor-pointer w-full sm:w-auto">
@@ -214,7 +214,7 @@ export default async function RelatoriosPage(props: {
                   PDF Completo
                 </Button>
               </a>
-              <a href={`/api/export?type=geral&format=txt${exportParams}`} target="_blank"
+              <a href={`/api/export?type=geral&format=txt${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
@@ -222,7 +222,7 @@ export default async function RelatoriosPage(props: {
                   TXT Completo
                 </Button>
               </a>
-              <a href={`/api/export?type=geral&format=csv${exportParams}`} target="_blank"
+              <a href={`/api/export?type=geral&format=csv${exportParams}`} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto"
               >
                 <Button variant="outline" className="cursor-pointer w-full sm:w-auto">
