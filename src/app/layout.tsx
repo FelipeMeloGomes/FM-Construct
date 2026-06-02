@@ -46,20 +46,8 @@ export default function RootLayout({
       <head />
       <body className={`${sora.variable} ${dmSans.variable} ${dmMono.variable} antialiased`}>
         <Script
-          id="theme-init"
+          src="/theme-init.js"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme');
-                  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                  }
-                } catch(e) {}
-              })();
-            `,
-          }}
         />
         <ThemeProvider>
           <Header />

@@ -70,7 +70,12 @@ export default function AnimatedBg() {
           style={{
             left: icon.x + "%",
             top: icon.y + "%",
-            animation: `login-float-pickaxe ${icon.duration}s ease-in-out ${icon.delay}s infinite alternate`,
+            animationName: "login-float-pickaxe",
+            animationDuration: icon.duration + "s",
+            animationTimingFunction: "ease-in-out",
+            animationDelay: icon.delay + "s",
+            animationIterationCount: "infinite",
+            animationDirection: "alternate",
           }}
         >
           <icon.Icon className="size-8 md:size-10" />
@@ -85,7 +90,12 @@ export default function AnimatedBg() {
           style={{
             left: icon.x + "%",
             top: icon.y + "%",
-            animation: `login-float-icon ${icon.duration}s ease-in-out ${icon.delay}s infinite alternate`,
+            animationName: "login-float-icon",
+            animationDuration: icon.duration + "s",
+            animationTimingFunction: "ease-in-out",
+            animationDelay: icon.delay + "s",
+            animationIterationCount: "infinite",
+            animationDirection: "alternate",
           }}
         >
           <icon.Icon className="size-8 md:size-10" />
