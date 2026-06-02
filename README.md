@@ -60,20 +60,22 @@ Sistema de gerenciamento de obra para pequenas construções — controle de ped
 | Camada | Tecnologia |
 |--------|-----------|
 | Framework | Next.js 16 (App Router) |
-| Linguagem | TypeScript |
+| Linguagem | TypeScript (strict, sem `any`) |
 | Estilo | Tailwind CSS v4 + CSS variáveis oklch |
 | Componentes | shadcn/ui (base-nova style, @base-ui/react) |
 | Banco | Neon Postgres (serverless) |
 | ORM | @neondatabase/serverless (SQL tagged template) |
 | Validação | Zod |
-| Formulários | react-hook-form + @hookform/resolvers |
+| Ícones | lucide-react (com optimizePackageImports) |
+| Gráficos | chart.js + react-chartjs-2 (dynamic import) |
 | PDF | jspdf + jspdf-autotable |
-| Datas | date-fns |
-| Ícones | lucide-react |
-| Notificações | sonner |
-| Gráficos | chart.js + react-chartjs-2 |
 | Export PNG | html-to-image |
+| Notificações | sonner |
 | Fontes | Sora (headings) + DM Sans (body) |
+| Testes | Vitest + Testing Library (43 testes) |
+| Lint | ESLint + eslint-plugin-vitest |
+| Package Manager | pnpm 10 |
+| CI/CD | GitHub Actions (lint → test → build → deploy) |
 | Deploy | Vercel (free tier) |
 
 ---
@@ -271,7 +273,7 @@ O sistema suporta pagamento parcial de dias trabalhados:
 
 ```bash
 # Instalar dependências
-npm install
+pnpm install
 
 # Configurar variáveis de ambiente
 cp .env.example .env.local
@@ -281,33 +283,65 @@ cp .env.example .env.local
 # Abrir sql/schema.sql e executar
 
 # Iniciar dev server
-npm run dev
+pnpm dev
 ```
 
-### Build
+### Banco de Desenvolvimento
+
+Crie uma **Child Branch** no Neon a partir da Main — assim dev e produção usam bancos isolados:
+
+1. Acesse https://console.neon.tech → seu projeto → **Branches** → **Create branch**
+2. Copie a connection string da nova branch
+3. Atualize `DATABASE_URL` no `.env.local`
+
+### Build & Testes
 
 ```bash
-npm run build    # Verifica TypeScript + produz build otimizado
-npm run dev      # Servidor de desenvolvimento
+pnpm lint        # ESLint
+pnpm test        # Vitest (43 testes)
+pnpm build       # TypeScript + build otimizado
+pnpm dev         # Servidor de desenvolvimento (Turbopack)
 ```
 
 ---
 
+## CI/CD
+
+O workflow `CI/CD` (`.github/workflows/ci.yml`) roda em todo push para `main` e `beta`:
+
+```
+lint ─┐
+       ├→ build → deploy
+test ──┘
+```
+
+- **lint** e **test** rodam em paralelo
+- **build** só executa se ambos passarem
+- **deploy** só executa se o build passar
+  - `main` → produção (`vercel deploy --prod`)
+  - `beta` → preview
+
+O auto-deploy do Vercel via git está desabilitado (`vercel.json` → `deploymentEnabled: false`). Todo deploy é controlado pelo workflow.
+
 ## Deploy
 
-O projeto está configurado para deploy na **Vercel** (plano gratuito):
+Projeto hospedado na **Vercel** (plano gratuito):
 
-- Conectado via GitHub: pushes na `main` geram deploy automático
 - Banco: Neon Postgres (free tier)
-- Autenticação: Password Protection nativa da Vercel (opcional)
+- Deploy via GitHub Actions (não automático do Vercel)
+- Ambiente de produção isolado do dev (Neon branches)
 
-### Variáveis de Ambiente
+### Variáveis de Ambiente (GitHub Secrets)
 
-| Variável | Descrição |
-|----------|-----------|
-| `DATABASE_URL` | Connection string do Neon Postgres |
-| `AUTH_SECRET` | Chave secreta para assinatura HMAC dos cookies |
-| `AUTH_PASSWORD` | Senha de acesso ao sistema |
+| Secret | Descrição |
+|--------|-----------|
+| `DATABASE_URL` | Connection string do Neon Postgres (produção) |
+| `AUTH_USER` | Usuário de login |
+| `AUTH_PASS` | Senha de login |
+| `AUTH_SECRET` | Chave secreta HMAC dos cookies |
+| `VERCEL_TOKEN` | Token de acesso Vercel |
+| `VERCEL_ORG_ID` | ID da organização Vercel |
+| `VERCEL_PROJECT_ID` | ID do projeto Vercel |
 
 ---
 
