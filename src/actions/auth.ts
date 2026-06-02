@@ -1,6 +1,5 @@
 "use server"
 
-import "server-only"
 import { cookies, headers } from "next/headers"
 import { z } from "zod"
 import { createToken } from "@/lib/auth"

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,5 +7,5 @@ export async function POST(request: NextRequest) {
   } catch {
     // ignore malformed reports
   }
-  return NextResponse.json({}, { status: 204 })
+  return new Response(null, { status: 204 })
 }
