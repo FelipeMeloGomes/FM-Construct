@@ -12,9 +12,10 @@ interface BulkDeleteBarProps {
   onDelete: () => Promise<ActionResult>
   onClear: () => void
   entityLabel: string
+  entityLabelPlural: string
 }
 
-export function BulkDeleteBar({ selectedCount, onDelete, onClear, entityLabel }: BulkDeleteBarProps) {
+export function BulkDeleteBar({ selectedCount, onDelete, onClear, entityLabel, entityLabelPlural }: BulkDeleteBarProps) {
   const [pending, setPending] = useState(false)
   const router = useRouter()
 
@@ -30,7 +31,8 @@ export function BulkDeleteBar({ selectedCount, onDelete, onClear, entityLabel }:
       return
     }
 
-    toast.success(`${selectedCount} ${entityLabel}${selectedCount !== 1 ? "s" : ""} excluído${selectedCount !== 1 ? "s" : ""}`)
+    const label = selectedCount === 1 ? entityLabel : entityLabelPlural
+    toast.success(`${selectedCount} ${label} excluído${selectedCount !== 1 ? "s" : ""}`)
     onClear()
     router.refresh()
   }
@@ -38,7 +40,7 @@ export function BulkDeleteBar({ selectedCount, onDelete, onClear, entityLabel }:
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-2.5">
       <span className="text-sm text-foreground">
-        <strong>{selectedCount}</strong> {entityLabel}{selectedCount !== 1 ? "s" : ""} selecionado{selectedCount !== 1 ? "s" : ""}
+        <strong>{selectedCount}</strong> {selectedCount === 1 ? entityLabel : entityLabelPlural} selecionado{selectedCount !== 1 ? "s" : ""}
       </span>
       <div className="flex items-center gap-2">
         <Button

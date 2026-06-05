@@ -163,6 +163,7 @@ export function TrabalhadoresTable({ trabalhadores }: Props) {
           onDelete={() => deletarTrabalhadores(Array.from(selected))}
           onClear={() => setSelected(new Set())}
           entityLabel="trabalhador"
+          entityLabelPlural="trabalhadores"
         />
       )}
       <Table>

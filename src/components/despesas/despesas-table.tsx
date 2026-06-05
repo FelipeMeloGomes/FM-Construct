@@ -168,6 +168,7 @@ export function DespesasTable({ despesas }: Props) {
           onDelete={() => deletarDespesas(Array.from(selected))}
           onClear={() => setSelected(new Set())}
           entityLabel="despesa"
+          entityLabelPlural="despesas"
         />
       )}
       <Table>
