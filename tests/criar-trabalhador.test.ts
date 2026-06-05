@@ -36,6 +36,7 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }))
 
+import { requireAuth } from "@/lib/auth"
 import { criarTrabalhador, atualizarTrabalhador, toggleAtivoTrabalhador, deletarTrabalhador, deletarTrabalhadores } from "@/lib/actions/trabalhadores"
 
 const defaults = { nome: "João Pedreiro", funcao: "pedreiro", valor_diaria: "200" }
@@ -52,6 +53,12 @@ describe("criarTrabalhador", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.insert).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(criarTrabalhador(makeFormData(defaults))).rejects.toThrow("NEXT_REDIRECT")
   })
 
   it("retorna erro quando nome tem menos de 3 caracteres", async () => {
@@ -98,6 +105,12 @@ describe("atualizarTrabalhador", () => {
     expect(mocks.update).toHaveBeenCalledOnce()
   })
 
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(atualizarTrabalhador(id, makeFormData(defaults))).rejects.toThrow("NEXT_REDIRECT")
+  })
+
   it("retorna erro quando nome tem menos de 3 caracteres", async () => {
     const result = await atualizarTrabalhador(id, makeFormData({ ...defaults, nome: "ab" }))
     assertIsError(result)
@@ -131,6 +144,12 @@ describe("toggleAtivoTrabalhador", () => {
     expect(mocks.toggleAtivo).toHaveBeenCalledOnce()
   })
 
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(toggleAtivoTrabalhador("550e8400-e29b-41d4-a716-446655440000", true)).rejects.toThrow("NEXT_REDIRECT")
+  })
+
   it("retorna erro para ID inválido", async () => {
     const result = await toggleAtivoTrabalhador("invalido", true)
     assertIsError(result)
@@ -154,6 +173,12 @@ describe("deletarTrabalhador", () => {
     expect(mocks.deleteOne).toHaveBeenCalledOnce()
   })
 
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(deletarTrabalhador("550e8400-e29b-41d4-a716-446655440000")).rejects.toThrow("NEXT_REDIRECT")
+  })
+
   it("retorna erro para ID inválido", async () => {
     const result = await deletarTrabalhador("invalido")
     assertIsError(result)
@@ -175,6 +200,12 @@ describe("deletarTrabalhadores", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.deleteMany).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(deletarTrabalhadores(["550e8400-e29b-41d4-a716-446655440000"])).rejects.toThrow("NEXT_REDIRECT")
   })
 
   it("retorna erro quando array está vazio", async () => {

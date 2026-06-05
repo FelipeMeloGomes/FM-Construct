@@ -10,6 +10,9 @@ const { mocks, state } = vi.hoisted(() => ({
   state: {
     shouldThrowDuplicate: false,
     trabalhadorNotFound: false,
+    selectNotFound: false,
+    joinNotFound: false,
+    dbGenericError: false,
   },
 }))
 
@@ -21,13 +24,23 @@ vi.mock("@/lib/db", async () => {
         if (state.trabalhadorNotFound) return []
         return [{ valor_diaria: 200, nome: "João" }]
       },
-      "SELECT trabalhador_id FROM dias_trabalhados": () => [{ trabalhador_id: "550e8400-e29b-41d4-a716-446655440000" }],
-      "t.valor_diaria, d.pago, t.nome": () => [{ trabalhador_id: "550e8400-e29b-41d4-a716-446655440000", valor_diaria: 200, pago: false, nome: "João" }],
+      "SELECT trabalhador_id FROM dias_trabalhados": () => {
+        if (state.selectNotFound) return []
+        return [{ trabalhador_id: "550e8400-e29b-41d4-a716-446655440000" }]
+      },
+      "t.valor_diaria, d.pago, t.nome": () => {
+        if (state.joinNotFound) return []
+        return [{ trabalhador_id: "550e8400-e29b-41d4-a716-446655440000", valor_diaria: 200, pago: false, nome: "João" }]
+      },
       "INSERT INTO dias_trabalhados": () => {
+        if (state.dbGenericError) throw new DbError("connection error", "08001")
         if (state.shouldThrowDuplicate) throw new DbError("duplicate key", "23505")
         return mocks.insert()
       },
-      "UPDATE dias_trabalhados": () => mocks.update(),
+      "UPDATE dias_trabalhados": () => {
+        if (state.dbGenericError) throw new DbError("connection error", "08001")
+        return mocks.update()
+      },
       "DELETE FROM dias_trabalhados WHERE id = $": () => mocks.deleteOne(),
     })),
   }
@@ -45,7 +58,16 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }))
 
+import { requireAuth } from "@/lib/auth"
 import { registrarDia, registrarPagamentoDia, pagarSemana, deletarDia, atualizarDia } from "@/lib/actions/dias"
+
+function resetState() {
+  state.shouldThrowDuplicate = false
+  state.trabalhadorNotFound = false
+  state.selectNotFound = false
+  state.joinNotFound = false
+  state.dbGenericError = false
+}
 
 const diaDefaults = {
   trabalhador_id: "550e8400-e29b-41d4-a716-446655440000",
@@ -56,8 +78,7 @@ const diaDefaults = {
 describe("registrarDia", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    state.shouldThrowDuplicate = false
-    state.trabalhadorNotFound = false
+    resetState()
   })
 
   it("registra dia com dados válidos", async () => {
@@ -75,6 +96,12 @@ describe("registrarDia", () => {
     const result = await registrarDia(makeFormData({ ...diaDefaults, tipo: "meio" }))
 
     expect(result.success).toBe(true)
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(registrarDia(makeFormData(diaDefaults))).rejects.toThrow("NEXT_REDIRECT")
   })
 
   it("retorna erro quando trabalhador não é encontrado", async () => {
@@ -113,6 +140,15 @@ describe("registrarDia", () => {
 
     expect(result.error).toContain("já tem registro no dia")
   })
+
+  it("retorna erro genérico quando banco de dados falha", async () => {
+    state.dbGenericError = true
+
+    const result = await registrarDia(makeFormData(diaDefaults))
+    assertIsError(result)
+
+    expect(result.error).toBe("Erro ao salvar no banco de dados")
+  })
 })
 
 describe("registrarPagamentoDia", () => {
@@ -124,6 +160,7 @@ describe("registrarPagamentoDia", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    resetState()
   })
 
   it("registra pagamento com dados válidos", async () => {
@@ -133,6 +170,22 @@ describe("registrarPagamentoDia", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(registrarPagamentoDia(makeFormData(pagamentoDefaults))).rejects.toThrow("NEXT_REDIRECT")
+  })
+
+  it("retorna erro quando registro não é encontrado", async () => {
+    state.selectNotFound = true
+
+    const result = await registrarPagamentoDia(makeFormData(pagamentoDefaults))
+    assertIsError(result)
+
+    expect(result.error).toBe("Registro não encontrado")
+    expect(mocks.update).not.toHaveBeenCalled()
   })
 
   it("retorna erro para valor de pagamento zero", async () => {
@@ -168,6 +221,7 @@ describe("pagarSemana", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    resetState()
   })
 
   it("paga semana com sucesso", async () => {
@@ -177,6 +231,12 @@ describe("pagarSemana", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(pagarSemana(trabalhadorId, ["550e8400-e29b-41d4-a716-446655440000"])).rejects.toThrow("NEXT_REDIRECT")
   })
 
   it("retorna erro para ID do trabalhador inválido", async () => {
@@ -200,6 +260,7 @@ describe("pagarSemana", () => {
 describe("deletarDia", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    resetState()
   })
 
   it("deleta dia com sucesso", async () => {
@@ -209,6 +270,22 @@ describe("deletarDia", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.deleteOne).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(deletarDia("550e8400-e29b-41d4-a716-446655440000")).rejects.toThrow("NEXT_REDIRECT")
+  })
+
+  it("retorna erro quando registro não é encontrado", async () => {
+    state.selectNotFound = true
+
+    const result = await deletarDia("550e8400-e29b-41d4-a716-446655440000")
+    assertIsError(result)
+
+    expect(result.error).toBe("Registro não encontrado")
+    expect(mocks.deleteOne).not.toHaveBeenCalled()
   })
 
   it("retorna erro para ID inválido", async () => {
@@ -223,6 +300,7 @@ describe("deletarDia", () => {
 describe("atualizarDia", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    resetState()
   })
 
   it("atualiza dia com dados válidos", async () => {
@@ -236,6 +314,43 @@ describe("atualizarDia", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(atualizarDia(makeFormData({
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      data: "2024-06-15",
+      tipo: "inteiro",
+    }))).rejects.toThrow("NEXT_REDIRECT")
+  })
+
+  it("retorna erro quando registro não é encontrado", async () => {
+    state.joinNotFound = true
+
+    const result = await atualizarDia(makeFormData({
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      data: "2024-06-15",
+      tipo: "inteiro",
+    }))
+    assertIsError(result)
+
+    expect(result.error).toBe("Registro não encontrado")
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  it("retorna erro genérico quando banco de dados falha na atualização", async () => {
+    state.dbGenericError = true
+
+    const result = await atualizarDia(makeFormData({
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      data: "2024-06-15",
+      tipo: "inteiro",
+    }))
+    assertIsError(result)
+
+    expect(result.error).toBe("Erro ao salvar no banco de dados")
   })
 
   it("retorna erro para tipo inválido", async () => {

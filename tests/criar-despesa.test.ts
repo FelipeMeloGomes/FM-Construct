@@ -34,6 +34,7 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }))
 
+import { requireAuth } from "@/lib/auth"
 import { criarDespesa, atualizarDespesa, deletarDespesa, deletarDespesas } from "@/lib/actions/despesas"
 
 const defaults = { descricao: "Cimento 50kg", categoria: "material", valor: "85.50", data: "2024-06-01" }
@@ -50,6 +51,12 @@ describe("criarDespesa", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.insert).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(criarDespesa(makeFormData(defaults))).rejects.toThrow("NEXT_REDIRECT")
   })
 
   it("retorna erro quando descrição tem menos de 3 caracteres", async () => {
@@ -105,6 +112,12 @@ describe("atualizarDespesa", () => {
     expect(mocks.update).toHaveBeenCalledOnce()
   })
 
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(atualizarDespesa(id, makeFormData(defaults))).rejects.toThrow("NEXT_REDIRECT")
+  })
+
   it("retorna erro quando descrição tem menos de 3 caracteres", async () => {
     const result = await atualizarDespesa(id, makeFormData({ ...defaults, descricao: "ab" }))
     assertIsError(result)
@@ -129,6 +142,12 @@ describe("deletarDespesa", () => {
     expect(mocks.deleteOne).toHaveBeenCalledOnce()
   })
 
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(deletarDespesa("550e8400-e29b-41d4-a716-446655440000")).rejects.toThrow("NEXT_REDIRECT")
+  })
+
   it("retorna erro para ID inválido", async () => {
     const result = await deletarDespesa("invalido")
     assertIsError(result)
@@ -150,6 +169,12 @@ describe("deletarDespesas", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.deleteMany).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(deletarDespesas(["550e8400-e29b-41d4-a716-446655440000"])).rejects.toThrow("NEXT_REDIRECT")
   })
 
   it("retorna erro quando array está vazio", async () => {
