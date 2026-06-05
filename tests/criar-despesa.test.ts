@@ -1,13 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import type { ActionResult } from "@/lib/actions/shared"
-
-function assertIsError(r: ActionResult): asserts r is {
-  success: false
-  error: string
-  fieldErrors?: Record<string, string[]>
-} {
-  if (r.success) throw new Error("Expected failure, got success")
-}
+import { assertIsError, makeFormData } from "../tests/test-utils"
 
 const mockInsert = vi.fn()
 vi.mock("@/lib/db", () => ({
@@ -35,14 +27,7 @@ vi.mock("next/cache", () => ({
 
 import { criarDespesa } from "@/lib/actions/despesas"
 
-const makeFormData = (overrides: Record<string, string> = {}) => {
-  const fd = new FormData()
-  fd.set("descricao", overrides.descricao ?? "Cimento 50kg")
-  fd.set("categoria", overrides.categoria ?? "material")
-  fd.set("valor", overrides.valor ?? "85.50")
-  fd.set("data", overrides.data ?? "2024-06-01")
-  return fd
-}
+const defaults = { descricao: "Cimento 50kg", categoria: "material", valor: "85.50", data: "2024-06-01" }
 
 describe("criarDespesa", () => {
   beforeEach(() => {
@@ -52,14 +37,14 @@ describe("criarDespesa", () => {
   it("cria despesa com dados válidos", async () => {
     mockInsert.mockResolvedValueOnce(undefined)
 
-    const result = await criarDespesa(makeFormData())
+    const result = await criarDespesa(makeFormData(defaults))
 
     expect(result.success).toBe(true)
     expect(mockInsert).toHaveBeenCalledOnce()
   })
 
   it("retorna erro quando descrição tem menos de 3 caracteres", async () => {
-    const result = await criarDespesa(makeFormData({ descricao: "ab" }))
+    const result = await criarDespesa(makeFormData({ ...defaults, descricao: "ab" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
@@ -68,7 +53,7 @@ describe("criarDespesa", () => {
   })
 
   it("retorna erro quando valor é zero", async () => {
-    const result = await criarDespesa(makeFormData({ valor: "0" }))
+    const result = await criarDespesa(makeFormData({ ...defaults, valor: "0" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
@@ -77,7 +62,7 @@ describe("criarDespesa", () => {
   })
 
   it("retorna erro quando valor é negativo", async () => {
-    const result = await criarDespesa(makeFormData({ valor: "-10" }))
+    const result = await criarDespesa(makeFormData({ ...defaults, valor: "-10" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
@@ -86,7 +71,7 @@ describe("criarDespesa", () => {
   })
 
   it("retorna erro quando categoria é inválida", async () => {
-    const result = await criarDespesa(makeFormData({ categoria: "inexistente" }))
+    const result = await criarDespesa(makeFormData({ ...defaults, categoria: "inexistente" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")

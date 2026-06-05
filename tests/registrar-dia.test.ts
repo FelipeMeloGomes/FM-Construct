@@ -1,13 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import type { ActionResult } from "@/lib/actions/shared"
-
-function assertIsError(r: ActionResult): asserts r is {
-  success: false
-  error: string
-  fieldErrors?: Record<string, string[]>
-} {
-  if (r.success) throw new Error("Expected failure, got success")
-}
+import { assertIsError, makeFormData } from "../tests/test-utils"
 
 let shouldThrowDuplicate = false
 const mockQuery = vi.fn()
@@ -55,12 +47,10 @@ vi.mock("next/cache", () => ({
 
 import { registrarDia } from "@/lib/actions/dias"
 
-const makeFormData = (overrides: Record<string, string> = {}) => {
-  const fd = new FormData()
-  fd.set("trabalhador_id", overrides.trabalhador_id ?? "550e8400-e29b-41d4-a716-446655440000")
-  fd.set("data", overrides.data ?? "2024-06-15")
-  fd.set("tipo", overrides.tipo ?? "inteiro")
-  return fd
+const defaults = {
+  trabalhador_id: "550e8400-e29b-41d4-a716-446655440000",
+  data: "2024-06-15",
+  tipo: "inteiro",
 }
 
 describe("registrarDia", () => {
@@ -72,7 +62,7 @@ describe("registrarDia", () => {
   it("registra dia com dados válidos", async () => {
     mockQuery.mockResolvedValueOnce(undefined)
 
-    const result = await registrarDia(makeFormData())
+    const result = await registrarDia(makeFormData(defaults))
 
     expect(result.success).toBe(true)
     expect(mockQuery).toHaveBeenCalledOnce()
@@ -81,13 +71,13 @@ describe("registrarDia", () => {
   it("registra meio-dia com sucesso", async () => {
     mockQuery.mockResolvedValueOnce(undefined)
 
-    const result = await registrarDia(makeFormData({ tipo: "meio" }))
+    const result = await registrarDia(makeFormData({ ...defaults, tipo: "meio" }))
 
     expect(result.success).toBe(true)
   })
 
   it("retorna erro para data vazia", async () => {
-    const result = await registrarDia(makeFormData({ data: "" }))
+    const result = await registrarDia(makeFormData({ ...defaults, data: "" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
@@ -96,7 +86,7 @@ describe("registrarDia", () => {
   })
 
   it("retorna erro para tipo inválido", async () => {
-    const result = await registrarDia(makeFormData({ tipo: "triplo" }))
+    const result = await registrarDia(makeFormData({ ...defaults, tipo: "triplo" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
@@ -107,7 +97,7 @@ describe("registrarDia", () => {
   it("retorna erro amigável para dia duplicado (código 23505)", async () => {
     shouldThrowDuplicate = true
 
-    const result = await registrarDia(makeFormData())
+    const result = await registrarDia(makeFormData(defaults))
     assertIsError(result)
 
     expect(result.error).toContain("já tem registro no dia")

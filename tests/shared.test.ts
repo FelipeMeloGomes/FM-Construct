@@ -1,14 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { z } from "zod"
-import { parseError, type ActionResult } from "@/lib/actions/shared"
-
-function assertIsError(r: ActionResult): asserts r is {
-  success: false
-  error: string
-  fieldErrors?: Record<string, string[]>
-} {
-  if (r.success) throw new Error("Expected failure, got success")
-}
+import { parseError } from "@/lib/actions/shared"
+import { assertIsError } from "../tests/test-utils"
 
 describe("parseError", () => {
   it("retorna fieldErrors para ZodError", () => {

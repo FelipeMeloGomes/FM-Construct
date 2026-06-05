@@ -1,13 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import type { ActionResult } from "@/lib/actions/shared"
-
-function assertIsError(r: ActionResult): asserts r is {
-  success: false
-  error: string
-  fieldErrors?: Record<string, string[]>
-} {
-  if (r.success) throw new Error("Expected failure, got success")
-}
+import { assertIsError, makeFormData } from "../tests/test-utils"
 
 const mockInsert = vi.fn()
 vi.mock("@/lib/db", () => ({
@@ -35,13 +27,7 @@ vi.mock("next/cache", () => ({
 
 import { criarTrabalhador } from "@/lib/actions/trabalhadores"
 
-const makeFormData = (overrides: Record<string, string> = {}) => {
-  const fd = new FormData()
-  fd.set("nome", overrides.nome ?? "João Pedreiro")
-  fd.set("funcao", overrides.funcao ?? "pedreiro")
-  fd.set("valor_diaria", overrides.valor_diaria ?? "200")
-  return fd
-}
+const defaults = { nome: "João Pedreiro", funcao: "pedreiro", valor_diaria: "200" }
 
 describe("criarTrabalhador", () => {
   beforeEach(() => {
@@ -51,14 +37,14 @@ describe("criarTrabalhador", () => {
   it("cria trabalhador com dados válidos", async () => {
     mockInsert.mockResolvedValueOnce(undefined)
 
-    const result = await criarTrabalhador(makeFormData())
+    const result = await criarTrabalhador(makeFormData(defaults))
 
     expect(result.success).toBe(true)
     expect(mockInsert).toHaveBeenCalledOnce()
   })
 
   it("retorna erro quando nome tem menos de 3 caracteres", async () => {
-    const result = await criarTrabalhador(makeFormData({ nome: "ab" }))
+    const result = await criarTrabalhador(makeFormData({ ...defaults, nome: "ab" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
@@ -67,7 +53,7 @@ describe("criarTrabalhador", () => {
   })
 
   it("retorna erro quando função é inválida", async () => {
-    const result = await criarTrabalhador(makeFormData({ funcao: "encanador" }))
+    const result = await criarTrabalhador(makeFormData({ ...defaults, funcao: "encanador" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
@@ -76,7 +62,7 @@ describe("criarTrabalhador", () => {
   })
 
   it("retorna erro quando valor da diária é negativo", async () => {
-    const result = await criarTrabalhador(makeFormData({ valor_diaria: "-50" }))
+    const result = await criarTrabalhador(makeFormData({ ...defaults, valor_diaria: "-50" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
