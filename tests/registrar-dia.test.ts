@@ -1,20 +1,34 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { assertIsError, makeFormData } from "../tests/test-utils"
 
-const { mockQuery, state } = vi.hoisted(() => ({
-  mockQuery: vi.fn(),
-  state: { shouldThrowDuplicate: false },
+const { mocks, state } = vi.hoisted(() => ({
+  mocks: {
+    insert: vi.fn(),
+    update: vi.fn(),
+    deleteOne: vi.fn(),
+  },
+  state: {
+    shouldThrowDuplicate: false,
+    trabalhadorNotFound: false,
+  },
 }))
 
 vi.mock("@/lib/db", async () => {
   const { sqlTagMock, DbError } = await import("../tests/test-utils")
   return {
     getDb: vi.fn(async () => sqlTagMock({
-      "SELECT valor_diaria, nome FROM trabalhadores": () => [{ valor_diaria: 200, nome: "João" }],
+      "SELECT valor_diaria, nome FROM trabalhadores": () => {
+        if (state.trabalhadorNotFound) return []
+        return [{ valor_diaria: 200, nome: "João" }]
+      },
+      "SELECT trabalhador_id FROM dias_trabalhados": () => [{ trabalhador_id: "550e8400-e29b-41d4-a716-446655440000" }],
+      "t.valor_diaria, d.pago, t.nome": () => [{ trabalhador_id: "550e8400-e29b-41d4-a716-446655440000", valor_diaria: 200, pago: false, nome: "João" }],
       "INSERT INTO dias_trabalhados": () => {
         if (state.shouldThrowDuplicate) throw new DbError("duplicate key", "23505")
-        return mockQuery()
+        return mocks.insert()
       },
+      "UPDATE dias_trabalhados": () => mocks.update(),
+      "DELETE FROM dias_trabalhados WHERE id = $": () => mocks.deleteOne(),
     })),
   }
 })
@@ -31,9 +45,9 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }))
 
-import { registrarDia } from "@/lib/actions/dias"
+import { registrarDia, registrarPagamentoDia, pagarSemana, deletarDia, atualizarDia } from "@/lib/actions/dias"
 
-const defaults = {
+const diaDefaults = {
   trabalhador_id: "550e8400-e29b-41d4-a716-446655440000",
   data: "2024-06-15",
   tipo: "inteiro",
@@ -43,49 +57,197 @@ describe("registrarDia", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     state.shouldThrowDuplicate = false
+    state.trabalhadorNotFound = false
   })
 
   it("registra dia com dados válidos", async () => {
-    mockQuery.mockResolvedValueOnce(undefined)
+    mocks.insert.mockResolvedValueOnce(undefined)
 
-    const result = await registrarDia(makeFormData(defaults))
+    const result = await registrarDia(makeFormData(diaDefaults))
 
     expect(result.success).toBe(true)
-    expect(mockQuery).toHaveBeenCalledOnce()
+    expect(mocks.insert).toHaveBeenCalledOnce()
   })
 
   it("registra meio-dia com sucesso", async () => {
-    mockQuery.mockResolvedValueOnce(undefined)
+    mocks.insert.mockResolvedValueOnce(undefined)
 
-    const result = await registrarDia(makeFormData({ ...defaults, tipo: "meio" }))
+    const result = await registrarDia(makeFormData({ ...diaDefaults, tipo: "meio" }))
 
     expect(result.success).toBe(true)
   })
 
+  it("retorna erro quando trabalhador não é encontrado", async () => {
+    state.trabalhadorNotFound = true
+
+    const result = await registrarDia(makeFormData(diaDefaults))
+    assertIsError(result)
+
+    expect(result.error).toBe("Trabalhador não encontrado")
+    expect(mocks.insert).not.toHaveBeenCalled()
+  })
+
   it("retorna erro para data vazia", async () => {
-    const result = await registrarDia(makeFormData({ ...defaults, data: "" }))
+    const result = await registrarDia(makeFormData({ ...diaDefaults, data: "" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.data).toBeDefined()
-    expect(mockQuery).not.toHaveBeenCalled()
+    expect(mocks.insert).not.toHaveBeenCalled()
   })
 
   it("retorna erro para tipo inválido", async () => {
-    const result = await registrarDia(makeFormData({ ...defaults, tipo: "triplo" }))
+    const result = await registrarDia(makeFormData({ ...diaDefaults, tipo: "triplo" }))
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.tipo).toBeDefined()
-    expect(mockQuery).not.toHaveBeenCalled()
+    expect(mocks.insert).not.toHaveBeenCalled()
   })
 
   it("retorna erro amigável para dia duplicado (código 23505)", async () => {
     state.shouldThrowDuplicate = true
 
-    const result = await registrarDia(makeFormData(defaults))
+    const result = await registrarDia(makeFormData(diaDefaults))
     assertIsError(result)
 
     expect(result.error).toContain("já tem registro no dia")
+  })
+})
+
+describe("registrarPagamentoDia", () => {
+  const pagamentoDefaults = {
+    dia_id: "550e8400-e29b-41d4-a716-446655440000",
+    valor_pago: "200",
+    data_pagamento: "2024-06-15",
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("registra pagamento com dados válidos", async () => {
+    mocks.update.mockResolvedValueOnce(undefined)
+
+    const result = await registrarPagamentoDia(makeFormData(pagamentoDefaults))
+
+    expect(result.success).toBe(true)
+    expect(mocks.update).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro para valor de pagamento zero", async () => {
+    const result = await registrarPagamentoDia(makeFormData({ ...pagamentoDefaults, valor_pago: "0" }))
+    assertIsError(result)
+
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.valor_pago).toBeDefined()
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  it("retorna erro para data de pagamento vazia", async () => {
+    const result = await registrarPagamentoDia(makeFormData({ ...pagamentoDefaults, data_pagamento: "" }))
+    assertIsError(result)
+
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.data_pagamento).toBeDefined()
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  it("retorna erro para dia_id inválido", async () => {
+    const result = await registrarPagamentoDia(makeFormData({ ...pagamentoDefaults, dia_id: "invalido" }))
+    assertIsError(result)
+
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.dia_id).toBeDefined()
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+})
+
+describe("pagarSemana", () => {
+  const trabalhadorId = "550e8400-e29b-41d4-a716-446655440000"
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("paga semana com sucesso", async () => {
+    mocks.update.mockResolvedValueOnce(undefined)
+
+    const result = await pagarSemana(trabalhadorId, ["550e8400-e29b-41d4-a716-446655440000"])
+
+    expect(result.success).toBe(true)
+    expect(mocks.update).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro para ID do trabalhador inválido", async () => {
+    const result = await pagarSemana("invalido", ["550e8400-e29b-41d4-a716-446655440000"])
+    assertIsError(result)
+
+    expect(result.error).toBe("ID inválido")
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  it("aceita array de IDs vazio (nenhuma linha afetada)", async () => {
+    mocks.update.mockResolvedValueOnce(undefined)
+
+    const result = await pagarSemana(trabalhadorId, [])
+
+    expect(result.success).toBe(true)
+    expect(mocks.update).toHaveBeenCalledOnce()
+  })
+})
+
+describe("deletarDia", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("deleta dia com sucesso", async () => {
+    mocks.deleteOne.mockResolvedValueOnce(undefined)
+
+    const result = await deletarDia("550e8400-e29b-41d4-a716-446655440000")
+
+    expect(result.success).toBe(true)
+    expect(mocks.deleteOne).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro para ID inválido", async () => {
+    const result = await deletarDia("invalido")
+    assertIsError(result)
+
+    expect(result.error).toBe("ID inválido")
+    expect(mocks.deleteOne).not.toHaveBeenCalled()
+  })
+})
+
+describe("atualizarDia", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("atualiza dia com dados válidos", async () => {
+    mocks.update.mockResolvedValueOnce(undefined)
+
+    const result = await atualizarDia(makeFormData({
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      data: "2024-06-15",
+      tipo: "inteiro",
+    }))
+
+    expect(result.success).toBe(true)
+    expect(mocks.update).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro para tipo inválido", async () => {
+    const result = await atualizarDia(makeFormData({
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      data: "2024-06-15",
+      tipo: "triplo",
+    }))
+    assertIsError(result)
+
+    expect(result.error).toBe("Verifique os campos")
+    expect(result.fieldErrors?.tipo).toBeDefined()
+    expect(mocks.update).not.toHaveBeenCalled()
   })
 })
