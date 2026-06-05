@@ -29,6 +29,18 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: { default: "FM-Construct", template: "%s — FM-Construct" },
   description: "Sistema de gerenciamento de obra",
+  manifest: "/manifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "FM Construct",
+  },
+  icons: [
+    { rel: "apple-touch-icon", url: "/icons/apple-touch-icon.png", sizes: "180x180" },
+    { rel: "icon", url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+    { rel: "icon", url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    { rel: "mask-icon", url: "/icons/icon-maskable.svg", color: "#0a0a0a" },
+  ],
 }
 
 export const viewport: Viewport = {
