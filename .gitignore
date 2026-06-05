@@ -44,3 +44,7 @@ next-env.d.ts
 
 # generated artifacts
 cookies.txt
+
+# server logs
+server.log
+server-err.log
