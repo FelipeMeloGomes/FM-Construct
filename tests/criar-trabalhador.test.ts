@@ -8,6 +8,8 @@ const { mocks } = vi.hoisted(() => ({
     toggleAtivo: vi.fn(),
     deleteOne: vi.fn(),
     deleteMany: vi.fn(),
+    selectAll: vi.fn(),
+    selectOne: vi.fn(),
   },
 }))
 
@@ -15,6 +17,8 @@ vi.mock("@/lib/db", async () => {
   const { sqlTagMock } = await import("../tests/test-utils")
   return {
     getDb: vi.fn(async () => sqlTagMock({
+      "SELECT * FROM trabalhadores ORDER BY": () => mocks.selectAll(),
+      "SELECT * FROM trabalhadores WHERE": () => mocks.selectOne(),
       "INSERT INTO trabalhadores": () => mocks.insert(),
       "SET nome": () => mocks.update(),
       "SET ativo": () => mocks.toggleAtivo(),
@@ -37,7 +41,7 @@ vi.mock("next/cache", () => ({
 }))
 
 import { requireAuth } from "@/lib/auth"
-import { criarTrabalhador, atualizarTrabalhador, toggleAtivoTrabalhador, deletarTrabalhador, deletarTrabalhadores } from "@/lib/actions/trabalhadores"
+import { criarTrabalhador, atualizarTrabalhador, toggleAtivoTrabalhador, deletarTrabalhador, deletarTrabalhadores, listarTrabalhadores, obterTrabalhador } from "@/lib/actions/trabalhadores"
 
 const defaults = { nome: "João Pedreiro", funcao: "pedreiro", valor_diaria: "200" }
 
@@ -66,7 +70,7 @@ describe("criarTrabalhador", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.nome).toBeDefined()
+    expect(result.fieldErrors?.nome?.[0]).toBe("Nome deve ter no mínimo 3 caracteres")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 
@@ -75,7 +79,7 @@ describe("criarTrabalhador", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.funcao).toBeDefined()
+    expect(result.fieldErrors?.funcao?.[0]).toBe("Invalid option: expected one of \"pedreiro\"|\"servente\"")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 
@@ -84,7 +88,7 @@ describe("criarTrabalhador", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.valor_diaria).toBeDefined()
+    expect(result.fieldErrors?.valor_diaria?.[0]).toBe("Valor da diária deve ser positivo")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 })
@@ -116,7 +120,7 @@ describe("atualizarTrabalhador", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.nome).toBeDefined()
+    expect(result.fieldErrors?.nome?.[0]).toBe("Nome deve ter no mínimo 3 caracteres")
     expect(mocks.update).not.toHaveBeenCalled()
   })
 })
@@ -214,5 +218,60 @@ describe("deletarTrabalhadores", () => {
 
     expect(result.error).toBe("Nenhum trabalhador selecionado")
     expect(mocks.deleteMany).not.toHaveBeenCalled()
+  })
+})
+
+describe("listarTrabalhadores", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("retorna lista de trabalhadores", async () => {
+    const trabalhadoresMock = [{ id: "1", nome: "João", funcao: "pedreiro" }]
+    mocks.selectAll.mockResolvedValueOnce(trabalhadoresMock)
+
+    const result = await listarTrabalhadores()
+
+    expect(result).toEqual(trabalhadoresMock)
+    expect(mocks.selectAll).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(listarTrabalhadores()).rejects.toThrow("NEXT_REDIRECT")
+  })
+})
+
+describe("obterTrabalhador", () => {
+  const id = "550e8400-e29b-41d4-a716-446655440000"
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("retorna trabalhador pelo ID", async () => {
+    const trabalhadorMock = { id, nome: "João", funcao: "pedreiro" }
+    mocks.selectOne.mockResolvedValueOnce([trabalhadorMock])
+
+    const result = await obterTrabalhador(id)
+
+    expect(result).toEqual(trabalhadorMock)
+    expect(mocks.selectOne).toHaveBeenCalledOnce()
+  })
+
+  it("retorna null quando trabalhador não existe", async () => {
+    mocks.selectOne.mockResolvedValueOnce([])
+
+    const result = await obterTrabalhador(id)
+
+    expect(result).toBeNull()
+    expect(mocks.selectOne).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(obterTrabalhador(id)).rejects.toThrow("NEXT_REDIRECT")
   })
 })

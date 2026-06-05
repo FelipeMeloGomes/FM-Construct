@@ -7,6 +7,7 @@ const { mocks } = vi.hoisted(() => ({
     update: vi.fn(),
     deleteOne: vi.fn(),
     deleteMany: vi.fn(),
+    selectAll: vi.fn(),
   },
 }))
 
@@ -14,6 +15,7 @@ vi.mock("@/lib/db", async () => {
   const { sqlTagMock } = await import("../tests/test-utils")
   return {
     getDb: vi.fn(async () => sqlTagMock({
+      "SELECT * FROM despesas ORDER BY": () => mocks.selectAll(),
       "INSERT INTO despesas": () => mocks.insert(),
       "UPDATE despesas": () => mocks.update(),
       "DELETE FROM despesas WHERE id = $": () => mocks.deleteOne(),
@@ -35,7 +37,7 @@ vi.mock("next/cache", () => ({
 }))
 
 import { requireAuth } from "@/lib/auth"
-import { criarDespesa, atualizarDespesa, deletarDespesa, deletarDespesas } from "@/lib/actions/despesas"
+import { criarDespesa, atualizarDespesa, deletarDespesa, deletarDespesas, listarDespesas } from "@/lib/actions/despesas"
 
 const defaults = { descricao: "Cimento 50kg", categoria: "material", valor: "85.50", data: "2024-06-01" }
 
@@ -64,7 +66,7 @@ describe("criarDespesa", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.descricao).toBeDefined()
+    expect(result.fieldErrors?.descricao?.[0]).toBe("Descrição deve ter no mínimo 3 caracteres")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 
@@ -73,7 +75,7 @@ describe("criarDespesa", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.valor).toBeDefined()
+    expect(result.fieldErrors?.valor?.[0]).toBe("Valor deve ser positivo")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 
@@ -82,7 +84,7 @@ describe("criarDespesa", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.valor).toBeDefined()
+    expect(result.fieldErrors?.valor?.[0]).toBe("Valor deve ser positivo")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 
@@ -91,7 +93,7 @@ describe("criarDespesa", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.categoria).toBeDefined()
+    expect(result.fieldErrors?.categoria?.[0]).toBe("Invalid option: expected one of \"material\"|\"alimentacao\"|\"transporte\"|\"ferramentas\"|\"outros\"")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 })
@@ -123,7 +125,7 @@ describe("atualizarDespesa", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.descricao).toBeDefined()
+    expect(result.fieldErrors?.descricao?.[0]).toBe("Descrição deve ter no mínimo 3 caracteres")
     expect(mocks.update).not.toHaveBeenCalled()
   })
 })
@@ -183,5 +185,27 @@ describe("deletarDespesas", () => {
 
     expect(result.error).toBe("Nenhuma despesa selecionada")
     expect(mocks.deleteMany).not.toHaveBeenCalled()
+  })
+})
+
+describe("listarDespesas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("retorna lista de despesas", async () => {
+    const despesasMock = [{ id: "1", descricao: "Cimento", valor: 85.5 }]
+    mocks.selectAll.mockResolvedValueOnce(despesasMock)
+
+    const result = await listarDespesas()
+
+    expect(result).toEqual(despesasMock)
+    expect(mocks.selectAll).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(listarDespesas()).rejects.toThrow("NEXT_REDIRECT")
   })
 })

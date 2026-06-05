@@ -6,6 +6,7 @@ const { mocks, state } = vi.hoisted(() => ({
     insert: vi.fn(),
     update: vi.fn(),
     deleteOne: vi.fn(),
+    selectAll: vi.fn(),
   },
   state: {
     shouldThrowDuplicate: false,
@@ -20,6 +21,7 @@ vi.mock("@/lib/db", async () => {
   const { sqlTagMock, DbError } = await import("../tests/test-utils")
   return {
     getDb: vi.fn(async () => sqlTagMock({
+      "SELECT * FROM dias_trabalhados": () => mocks.selectAll(),
       "SELECT valor_diaria, nome FROM trabalhadores": () => {
         if (state.trabalhadorNotFound) return []
         return [{ valor_diaria: 200, nome: "João" }]
@@ -59,7 +61,7 @@ vi.mock("next/cache", () => ({
 }))
 
 import { requireAuth } from "@/lib/auth"
-import { registrarDia, registrarPagamentoDia, pagarSemana, deletarDia, atualizarDia } from "@/lib/actions/dias"
+import { registrarDia, registrarPagamentoDia, pagarSemana, deletarDia, atualizarDia, listarDias } from "@/lib/actions/dias"
 
 function resetState() {
   state.shouldThrowDuplicate = false
@@ -119,7 +121,7 @@ describe("registrarDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.data).toBeDefined()
+    expect(result.fieldErrors?.data?.[0]).toBe("Selecione a data")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 
@@ -128,7 +130,7 @@ describe("registrarDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.tipo).toBeDefined()
+    expect(result.fieldErrors?.tipo?.[0]).toBe("Invalid option: expected one of \"inteiro\"|\"meio\"")
     expect(mocks.insert).not.toHaveBeenCalled()
   })
 
@@ -193,7 +195,7 @@ describe("registrarPagamentoDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.valor_pago).toBeDefined()
+    expect(result.fieldErrors?.valor_pago?.[0]).toBe("Valor pago deve ser positivo")
     expect(mocks.update).not.toHaveBeenCalled()
   })
 
@@ -202,7 +204,7 @@ describe("registrarPagamentoDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.data_pagamento).toBeDefined()
+    expect(result.fieldErrors?.data_pagamento?.[0]).toBe("Selecione a data do pagamento")
     expect(mocks.update).not.toHaveBeenCalled()
   })
 
@@ -211,7 +213,7 @@ describe("registrarPagamentoDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.dia_id).toBeDefined()
+    expect(result.fieldErrors?.dia_id?.[0]).toBe("Invalid UUID")
     expect(mocks.update).not.toHaveBeenCalled()
   })
 })
@@ -362,7 +364,31 @@ describe("atualizarDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Verifique os campos")
-    expect(result.fieldErrors?.tipo).toBeDefined()
+    expect(result.fieldErrors?.tipo?.[0]).toBe("Invalid option: expected one of \"inteiro\"|\"meio\"")
     expect(mocks.update).not.toHaveBeenCalled()
+  })
+})
+
+describe("listarDias", () => {
+  const trabalhadorId = "550e8400-e29b-41d4-a716-446655440000"
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("retorna lista de dias de um trabalhador", async () => {
+    const diasMock = [{ id: "1", data: "2024-06-15", tipo: "inteiro", pago: false }]
+    mocks.selectAll.mockResolvedValueOnce(diasMock)
+
+    const result = await listarDias(trabalhadorId)
+
+    expect(result).toEqual(diasMock)
+    expect(mocks.selectAll).toHaveBeenCalledOnce()
+  })
+
+  it("retorna erro quando usuário não está autenticado", async () => {
+    vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
+
+    await expect(listarDias(trabalhadorId)).rejects.toThrow("NEXT_REDIRECT")
   })
 })
