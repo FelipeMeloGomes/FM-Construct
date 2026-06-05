@@ -37,6 +37,7 @@ vi.mock("next/cache", () => ({
 }))
 
 import { requireAuth } from "@/lib/auth"
+import { logAudit } from "@/lib/audit"
 import { criarDespesa, atualizarDespesa, deletarDespesa, deletarDespesas, listarDespesas } from "@/lib/actions/despesas"
 
 const defaults = { descricao: "Cimento 50kg", categoria: "material", valor: "85.50", data: "2024-06-01" }
@@ -53,12 +54,14 @@ describe("criarDespesa", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.insert).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("criar_despesa", "Descrição: Cimento 50kg, Valor: 85.5")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(criarDespesa(makeFormData(defaults))).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando descrição tem menos de 3 caracteres", async () => {
@@ -68,6 +71,7 @@ describe("criarDespesa", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.descricao?.[0]).toBe("Descrição deve ter no mínimo 3 caracteres")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando valor é zero", async () => {
@@ -77,6 +81,7 @@ describe("criarDespesa", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.valor?.[0]).toBe("Valor deve ser positivo")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando valor é negativo", async () => {
@@ -86,6 +91,7 @@ describe("criarDespesa", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.valor?.[0]).toBe("Valor deve ser positivo")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando categoria é inválida", async () => {
@@ -95,6 +101,7 @@ describe("criarDespesa", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.categoria?.[0]).toBe("Invalid option: expected one of \"material\"|\"alimentacao\"|\"transporte\"|\"ferramentas\"|\"outros\"")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -112,12 +119,14 @@ describe("atualizarDespesa", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("atualizar_despesa", "ID: 550e8400-e29b-41d4-a716-446655440000")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(atualizarDespesa(id, makeFormData(defaults))).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando descrição tem menos de 3 caracteres", async () => {
@@ -127,6 +136,7 @@ describe("atualizarDespesa", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.descricao?.[0]).toBe("Descrição deve ter no mínimo 3 caracteres")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -142,12 +152,14 @@ describe("deletarDespesa", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.deleteOne).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("deletar_despesa", "ID: 550e8400-e29b-41d4-a716-446655440000")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(deletarDespesa("550e8400-e29b-41d4-a716-446655440000")).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para ID inválido", async () => {
@@ -156,6 +168,7 @@ describe("deletarDespesa", () => {
 
     expect(result.error).toBe("ID inválido")
     expect(mocks.deleteOne).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -171,12 +184,14 @@ describe("deletarDespesas", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.deleteMany).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("deletar_despesas", "1 despesas")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(deletarDespesas(["550e8400-e29b-41d4-a716-446655440000"])).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando array está vazio", async () => {
@@ -185,6 +200,7 @@ describe("deletarDespesas", () => {
 
     expect(result.error).toBe("Nenhuma despesa selecionada")
     expect(mocks.deleteMany).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 

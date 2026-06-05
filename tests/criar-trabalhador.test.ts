@@ -41,6 +41,7 @@ vi.mock("next/cache", () => ({
 }))
 
 import { requireAuth } from "@/lib/auth"
+import { logAudit } from "@/lib/audit"
 import { criarTrabalhador, atualizarTrabalhador, toggleAtivoTrabalhador, deletarTrabalhador, deletarTrabalhadores, listarTrabalhadores, obterTrabalhador } from "@/lib/actions/trabalhadores"
 
 const defaults = { nome: "João Pedreiro", funcao: "pedreiro", valor_diaria: "200" }
@@ -57,12 +58,14 @@ describe("criarTrabalhador", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.insert).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("criar_trabalhador", "Nome: João Pedreiro")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(criarTrabalhador(makeFormData(defaults))).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando nome tem menos de 3 caracteres", async () => {
@@ -72,6 +75,7 @@ describe("criarTrabalhador", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.nome?.[0]).toBe("Nome deve ter no mínimo 3 caracteres")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando função é inválida", async () => {
@@ -81,6 +85,7 @@ describe("criarTrabalhador", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.funcao?.[0]).toBe("Invalid option: expected one of \"pedreiro\"|\"servente\"")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando valor da diária é negativo", async () => {
@@ -90,6 +95,7 @@ describe("criarTrabalhador", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.valor_diaria?.[0]).toBe("Valor da diária deve ser positivo")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -107,12 +113,14 @@ describe("atualizarTrabalhador", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("atualizar_trabalhador", "ID: 550e8400-e29b-41d4-a716-446655440000, Nome: João Pedreiro")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(atualizarTrabalhador(id, makeFormData(defaults))).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando nome tem menos de 3 caracteres", async () => {
@@ -122,6 +130,7 @@ describe("atualizarTrabalhador", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.nome?.[0]).toBe("Nome deve ter no mínimo 3 caracteres")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -137,6 +146,7 @@ describe("toggleAtivoTrabalhador", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.toggleAtivo).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("toggle_ativo_trabalhador", "ID: 550e8400-e29b-41d4-a716-446655440000, Ativo: true")
   })
 
   it("desativa trabalhador com sucesso", async () => {
@@ -146,12 +156,14 @@ describe("toggleAtivoTrabalhador", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.toggleAtivo).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("toggle_ativo_trabalhador", "ID: 550e8400-e29b-41d4-a716-446655440000, Ativo: false")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(toggleAtivoTrabalhador("550e8400-e29b-41d4-a716-446655440000", true)).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para ID inválido", async () => {
@@ -160,6 +172,7 @@ describe("toggleAtivoTrabalhador", () => {
 
     expect(result.error).toBe("ID inválido")
     expect(mocks.toggleAtivo).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -175,12 +188,14 @@ describe("deletarTrabalhador", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.deleteOne).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("deletar_trabalhador", "ID: 550e8400-e29b-41d4-a716-446655440000")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(deletarTrabalhador("550e8400-e29b-41d4-a716-446655440000")).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para ID inválido", async () => {
@@ -189,6 +204,7 @@ describe("deletarTrabalhador", () => {
 
     expect(result.error).toBe("ID inválido")
     expect(mocks.deleteOne).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -204,12 +220,14 @@ describe("deletarTrabalhadores", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.deleteMany).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("deletar_trabalhadores", "1 trabalhadores")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(deletarTrabalhadores(["550e8400-e29b-41d4-a716-446655440000"])).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando array está vazio", async () => {
@@ -218,6 +236,7 @@ describe("deletarTrabalhadores", () => {
 
     expect(result.error).toBe("Nenhum trabalhador selecionado")
     expect(mocks.deleteMany).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 

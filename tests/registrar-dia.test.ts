@@ -61,6 +61,7 @@ vi.mock("next/cache", () => ({
 }))
 
 import { requireAuth } from "@/lib/auth"
+import { logAudit } from "@/lib/audit"
 import { registrarDia, registrarPagamentoDia, pagarSemana, deletarDia, atualizarDia, listarDias } from "@/lib/actions/dias"
 
 function resetState() {
@@ -90,6 +91,7 @@ describe("registrarDia", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.insert).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("registrar_dia", "Trabalhador: 550e8400-e29b-41d4-a716-446655440000, Data: 2024-06-15")
   })
 
   it("registra meio-dia com sucesso", async () => {
@@ -98,12 +100,14 @@ describe("registrarDia", () => {
     const result = await registrarDia(makeFormData({ ...diaDefaults, tipo: "meio" }))
 
     expect(result.success).toBe(true)
+    expect(logAudit).toHaveBeenCalledWith("registrar_dia", "Trabalhador: 550e8400-e29b-41d4-a716-446655440000, Data: 2024-06-15")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(registrarDia(makeFormData(diaDefaults))).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando trabalhador não é encontrado", async () => {
@@ -114,6 +118,7 @@ describe("registrarDia", () => {
 
     expect(result.error).toBe("Trabalhador não encontrado")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para data vazia", async () => {
@@ -123,6 +128,7 @@ describe("registrarDia", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.data?.[0]).toBe("Selecione a data")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para tipo inválido", async () => {
@@ -132,6 +138,7 @@ describe("registrarDia", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.tipo?.[0]).toBe("Invalid option: expected one of \"inteiro\"|\"meio\"")
     expect(mocks.insert).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro amigável para dia duplicado (código 23505)", async () => {
@@ -141,6 +148,7 @@ describe("registrarDia", () => {
     assertIsError(result)
 
     expect(result.error).toContain("já tem registro no dia")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro genérico quando banco de dados falha", async () => {
@@ -150,6 +158,8 @@ describe("registrarDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Erro ao salvar no banco de dados")
+    expect(logAudit).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -172,12 +182,14 @@ describe("registrarPagamentoDia", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("registrar_pagamento", "Dia: 550e8400-e29b-41d4-a716-446655440000, Valor: 200")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(registrarPagamentoDia(makeFormData(pagamentoDefaults))).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando registro não é encontrado", async () => {
@@ -188,6 +200,7 @@ describe("registrarPagamentoDia", () => {
 
     expect(result.error).toBe("Registro não encontrado")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para valor de pagamento zero", async () => {
@@ -197,6 +210,7 @@ describe("registrarPagamentoDia", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.valor_pago?.[0]).toBe("Valor pago deve ser positivo")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para data de pagamento vazia", async () => {
@@ -206,6 +220,7 @@ describe("registrarPagamentoDia", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.data_pagamento?.[0]).toBe("Selecione a data do pagamento")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para dia_id inválido", async () => {
@@ -215,6 +230,7 @@ describe("registrarPagamentoDia", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.dia_id?.[0]).toBe("Invalid UUID")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -233,12 +249,14 @@ describe("pagarSemana", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("pagar_semana", "Trabalhador: 550e8400-e29b-41d4-a716-446655440000, Dias: 1")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(pagarSemana(trabalhadorId, ["550e8400-e29b-41d4-a716-446655440000"])).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para ID do trabalhador inválido", async () => {
@@ -247,6 +265,7 @@ describe("pagarSemana", () => {
 
     expect(result.error).toBe("ID inválido")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("aceita array de IDs vazio (nenhuma linha afetada)", async () => {
@@ -256,6 +275,7 @@ describe("pagarSemana", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("pagar_semana", "Trabalhador: 550e8400-e29b-41d4-a716-446655440000, Dias: 0")
   })
 })
 
@@ -272,12 +292,14 @@ describe("deletarDia", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.deleteOne).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("deletar_dia", "ID: 550e8400-e29b-41d4-a716-446655440000")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(deletarDia("550e8400-e29b-41d4-a716-446655440000")).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando registro não é encontrado", async () => {
@@ -288,6 +310,7 @@ describe("deletarDia", () => {
 
     expect(result.error).toBe("Registro não encontrado")
     expect(mocks.deleteOne).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para ID inválido", async () => {
@@ -296,6 +319,7 @@ describe("deletarDia", () => {
 
     expect(result.error).toBe("ID inválido")
     expect(mocks.deleteOne).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
@@ -316,6 +340,7 @@ describe("atualizarDia", () => {
 
     expect(result.success).toBe(true)
     expect(mocks.update).toHaveBeenCalledOnce()
+    expect(logAudit).toHaveBeenCalledWith("atualizar_dia", "ID: 550e8400-e29b-41d4-a716-446655440000")
   })
 
   it("retorna erro quando usuário não está autenticado", async () => {
@@ -326,6 +351,7 @@ describe("atualizarDia", () => {
       data: "2024-06-15",
       tipo: "inteiro",
     }))).rejects.toThrow("NEXT_REDIRECT")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro quando registro não é encontrado", async () => {
@@ -340,6 +366,7 @@ describe("atualizarDia", () => {
 
     expect(result.error).toBe("Registro não encontrado")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro genérico quando banco de dados falha na atualização", async () => {
@@ -353,6 +380,7 @@ describe("atualizarDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Erro ao salvar no banco de dados")
+    expect(logAudit).not.toHaveBeenCalled()
   })
 
   it("retorna erro para tipo inválido", async () => {
@@ -366,6 +394,7 @@ describe("atualizarDia", () => {
     expect(result.error).toBe("Verifique os campos")
     expect(result.fieldErrors?.tipo?.[0]).toBe("Invalid option: expected one of \"inteiro\"|\"meio\"")
     expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
   })
 })
 
