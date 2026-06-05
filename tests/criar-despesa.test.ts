@@ -1,17 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { assertIsError, makeFormData } from "../tests/test-utils"
 
-const mockInsert = vi.fn()
-vi.mock("@/lib/db", () => ({
-  getDb: vi.fn(async () => {
-    const fn = (strings: TemplateStringsArray, ...values: unknown[]) => {
-      const sql = strings.reduce((acc, s, i) => acc + s + (values[i] !== undefined ? `$${i + 1}` : ""), "")
-      if (sql.includes("INSERT INTO despesas")) return mockInsert()
-      return []
-    }
-    return fn
-  }),
-}))
+const { mockInsert } = vi.hoisted(() => ({ mockInsert: vi.fn() }))
+
+vi.mock("@/lib/db", async () => {
+  const { sqlTagMock } = await import("../tests/test-utils")
+  return {
+    getDb: vi.fn(async () => sqlTagMock({ "INSERT INTO despesas": () => mockInsert() })),
+  }
+})
 
 vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn(async () => {}),

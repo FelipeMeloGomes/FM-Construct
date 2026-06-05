@@ -1,37 +1,23 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { assertIsError, makeFormData } from "../tests/test-utils"
 
-let shouldThrowDuplicate = false
-const mockQuery = vi.fn()
-class DbError extends Error {
-  code: string
-  constructor(message: string, code: string) {
-    super(message)
-    this.code = code
-  }
-}
-
-vi.mock("@/lib/db", () => ({
-  getDb: vi.fn(async () => {
-    const fn = (strings: TemplateStringsArray, ...values: unknown[]) => {
-      const sql = strings.reduce((acc, s, i) => acc + s + (values[i] !== undefined ? `$${i + 1}` : ""), "")
-
-      if (sql.includes("SELECT valor_diaria, nome FROM trabalhadores")) {
-        return [{ valor_diaria: 200, nome: "João" }]
-      }
-
-      if (sql.includes("INSERT INTO dias_trabalhados")) {
-        if (shouldThrowDuplicate) {
-          throw new DbError("duplicate key", "23505")
-        }
-        return mockQuery()
-      }
-
-      return []
-    }
-    return fn
-  }),
+const { mockQuery, state } = vi.hoisted(() => ({
+  mockQuery: vi.fn(),
+  state: { shouldThrowDuplicate: false },
 }))
+
+vi.mock("@/lib/db", async () => {
+  const { sqlTagMock, DbError } = await import("../tests/test-utils")
+  return {
+    getDb: vi.fn(async () => sqlTagMock({
+      "SELECT valor_diaria, nome FROM trabalhadores": () => [{ valor_diaria: 200, nome: "João" }],
+      "INSERT INTO dias_trabalhados": () => {
+        if (state.shouldThrowDuplicate) throw new DbError("duplicate key", "23505")
+        return mockQuery()
+      },
+    })),
+  }
+})
 
 vi.mock("@/lib/auth", () => ({
   requireAuth: vi.fn(async () => {}),
@@ -56,7 +42,7 @@ const defaults = {
 describe("registrarDia", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    shouldThrowDuplicate = false
+    state.shouldThrowDuplicate = false
   })
 
   it("registra dia com dados válidos", async () => {
@@ -95,7 +81,7 @@ describe("registrarDia", () => {
   })
 
   it("retorna erro amigável para dia duplicado (código 23505)", async () => {
-    shouldThrowDuplicate = true
+    state.shouldThrowDuplicate = true
 
     const result = await registrarDia(makeFormData(defaults))
     assertIsError(result)

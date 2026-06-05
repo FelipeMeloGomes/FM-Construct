@@ -15,3 +15,24 @@ export function makeFormData(fields: Record<string, string>): FormData {
   }
   return fd
 }
+
+export class DbError extends Error {
+  code: string
+  constructor(message: string, code: string) {
+    super(message)
+    this.code = code
+  }
+}
+
+export function sqlTagMock(handlers: Record<string, () => unknown>) {
+  return async (strings: TemplateStringsArray, ...values: unknown[]) => {
+    const sql = strings.reduce(
+      (acc, s, i) => acc + s + (values[i] !== undefined ? `$${i + 1}` : ""),
+      ""
+    )
+    for (const [pattern, handler] of Object.entries(handlers)) {
+      if (sql.includes(pattern)) return handler()
+    }
+    return []
+  }
+}
