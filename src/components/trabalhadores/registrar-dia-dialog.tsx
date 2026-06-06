@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, ReactElement } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { registrarDia } from "@/lib/actions/dias"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,7 @@ interface RegistrarDiaDialogProps {
 }
 
 export function RegistrarDiaDialog({ trabalhadorId, valorDiaria, trigger }: RegistrarDiaDialogProps) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [tipo, setTipo] = useState<"inteiro" | "meio">("inteiro")
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>()
@@ -38,6 +40,7 @@ export function RegistrarDiaDialog({ trabalhadorId, valorDiaria, trigger }: Regi
     }
     toast.success("Dia registrado com sucesso!")
     setOpen(false)
+    router.refresh()
   }
 
   return (

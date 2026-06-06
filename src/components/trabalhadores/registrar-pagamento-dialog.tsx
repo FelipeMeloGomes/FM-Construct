@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { registrarPagamentoDia } from "@/lib/actions/dias"
 import { formatCurrency } from "@/lib/utils"
@@ -18,6 +19,7 @@ interface RegistrarPagamentoDialogProps {
 }
 
 export function RegistrarPagamentoDialog({ diaId, valorDevido }: RegistrarPagamentoDialogProps) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
 
   async function handleSubmit(formData: FormData) {
@@ -31,6 +33,7 @@ export function RegistrarPagamentoDialog({ diaId, valorDevido }: RegistrarPagame
     const dataFormatada = new Date(dataPagamento + "T12:00:00").toLocaleDateString("pt-BR")
     toast.success(`Pago em ${dataFormatada}`)
     setOpen(false)
+    router.refresh()
   }
 
   return (

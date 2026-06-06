@@ -55,6 +55,7 @@ export function ConfirmDialog({
     if (result.redirectTo) {
       router.push(result.redirectTo)
     }
+    router.refresh()
   }
 
   return (

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { atualizarDia } from "@/lib/actions/dias"
 import { toDateInputValue } from "@/lib/utils"
@@ -28,6 +29,7 @@ interface EditarDiaDialogProps {
 }
 
 export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [tipo, setTipo] = useState<"inteiro" | "meio">(dia.tipo as "inteiro" | "meio")
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>()
@@ -46,6 +48,7 @@ export function EditarDiaDialog({ dia, valorDiaria }: EditarDiaDialogProps) {
     }
     toast.success("Dia atualizado com sucesso!")
     setOpen(false)
+    router.refresh()
   }
 
   return (
