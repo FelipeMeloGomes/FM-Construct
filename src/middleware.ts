@@ -26,7 +26,15 @@ export default async function proxy(request: NextRequest) {
     return res
   }
 
-  if (pathname === "/login" || pathname === "/theme-init.js" || pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname.startsWith("/api/csp-report")) {
+  if (pathname === "/login") {
+    const token = request.cookies.get("fm_auth")?.value
+    if (token && (await verifyToken(token))) {
+      return NextResponse.redirect(new URL("/", request.url))
+    }
+    return htmlResponse()
+  }
+
+  if (pathname === "/theme-init.js" || pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname.startsWith("/api/csp-report")) {
     return htmlResponse()
   }
 

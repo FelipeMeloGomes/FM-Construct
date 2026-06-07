@@ -19,10 +19,14 @@ export async function criarTrabalhador(formData: FormData): Promise<ActionResult
   if (!parsed.success) return { success: false, error: "Verifique os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   const db = await getDb()
 
-  await db`
-    INSERT INTO trabalhadores (nome, funcao, valor_diaria)
-    VALUES (${parsed.data.nome}, ${parsed.data.funcao}, ${parsed.data.valor_diaria})
-  `
+  try {
+    await db`
+      INSERT INTO trabalhadores (nome, funcao, valor_diaria)
+      VALUES (${parsed.data.nome}, ${parsed.data.funcao}, ${parsed.data.valor_diaria})
+    `
+  } catch {
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
 
   logAudit("criar_trabalhador", `Nome: ${parsed.data.nome}`)
   revalidatePath("/trabalhadores")
@@ -32,15 +36,21 @@ export async function criarTrabalhador(formData: FormData): Promise<ActionResult
 
 export async function atualizarTrabalhador(id: string, formData: FormData): Promise<ActionResult> {
   await requireAuth()
+  const idOk = uuidSchema.safeParse(id)
+  if (!idOk.success) return { success: false, error: "ID inválido" }
   const parsed = criarSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { success: false, error: "Verifique os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   const db = await getDb()
 
-  await db`
-    UPDATE trabalhadores
-    SET nome = ${parsed.data.nome}, funcao = ${parsed.data.funcao}, valor_diaria = ${parsed.data.valor_diaria}
-    WHERE id = ${id}
-  `
+  try {
+    await db`
+      UPDATE trabalhadores
+      SET nome = ${parsed.data.nome}, funcao = ${parsed.data.funcao}, valor_diaria = ${parsed.data.valor_diaria}
+      WHERE id = ${id}
+    `
+  } catch {
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
 
   logAudit("atualizar_trabalhador", `ID: ${id}, Nome: ${parsed.data.nome}`)
   revalidatePath("/trabalhadores")
@@ -57,9 +67,13 @@ export async function toggleAtivoTrabalhador(id: string, ativo: boolean): Promis
   if (!idOk.success) return { success: false, error: "ID inválido" }
   if (typeof ativo !== "boolean") return { success: false, error: "Valor inválido" }
   const db = await getDb()
-  await db`
-    UPDATE trabalhadores SET ativo = ${ativo} WHERE id = ${id}
-  `
+  try {
+    await db`
+      UPDATE trabalhadores SET ativo = ${ativo} WHERE id = ${id}
+    `
+  } catch {
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
 
   logAudit("toggle_ativo_trabalhador", `ID: ${id}, Ativo: ${ativo}`)
   revalidatePath("/trabalhadores")
@@ -72,7 +86,11 @@ export async function deletarTrabalhador(id: string): Promise<ActionResult> {
   const idOk = uuidSchema.safeParse(id)
   if (!idOk.success) return { success: false, error: "ID inválido" }
   const db = await getDb()
-  await db`DELETE FROM trabalhadores WHERE id = ${id}`
+  try {
+    await db`DELETE FROM trabalhadores WHERE id = ${id}`
+  } catch {
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
   logAudit("deletar_trabalhador", `ID: ${id}`)
   revalidatePath("/trabalhadores")
   revalidatePath("/")
@@ -83,7 +101,11 @@ export async function deletarTrabalhadores(ids: string[]): Promise<ActionResult>
   await requireAuth()
   if (ids.length === 0) return { success: false, error: "Nenhum trabalhador selecionado" }
   const db = await getDb()
-  await db`DELETE FROM trabalhadores WHERE id = ANY(${ids})`
+  try {
+    await db`DELETE FROM trabalhadores WHERE id = ANY(${ids})`
+  } catch {
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
   logAudit("deletar_trabalhadores", `${ids.length} trabalhadores`)
   revalidatePath("/trabalhadores")
   revalidatePath("/")

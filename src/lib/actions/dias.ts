@@ -138,11 +138,15 @@ export async function pagarSemana(trabalhadorId: string, diaIds: string[]): Prom
   if (!idsOk.success) return { success: false, error: "IDs inválidos" }
   const db = await getDb()
 
-  await db`
-    UPDATE dias_trabalhados
-    SET pago = true, valor_pago = valor_dia, data_pagamento = CURRENT_DATE
-    WHERE trabalhador_id = ${trabalhadorId} AND id = ANY(${diaIds}::uuid[]) AND pago = false
-  `
+  try {
+    await db`
+      UPDATE dias_trabalhados
+      SET pago = true, valor_pago = valor_dia, data_pagamento = CURRENT_DATE
+      WHERE trabalhador_id = ${trabalhadorId} AND id = ANY(${diaIds}::uuid[]) AND pago = false
+    `
+  } catch {
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
 
   logAudit("pagar_semana", `Trabalhador: ${trabalhadorId}, Dias: ${diaIds.length}`)
   revalidatePath(`/trabalhadores/${trabalhadorId}`)
@@ -160,7 +164,11 @@ export async function deletarDia(id: string): Promise<ActionResult> {
   `
   if (!dia[0]) return { success: false, error: "Registro não encontrado" }
 
-  await db`DELETE FROM dias_trabalhados WHERE id = ${id}`
+  try {
+    await db`DELETE FROM dias_trabalhados WHERE id = ${id}`
+  } catch {
+    return { success: false, error: "Erro ao salvar no banco de dados" }
+  }
 
   logAudit("deletar_dia", `ID: ${id}`)
   revalidatePath(`/trabalhadores/${dia[0].trabalhador_id}`)
