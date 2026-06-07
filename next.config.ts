@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["lucide-react"],
     serverActions: {
       bodySizeLimit: "1mb",
+      allowedOrigins: [process.env.APP_ORIGIN].filter((x): x is string => !!x),
     },
   },
   async headers() {
