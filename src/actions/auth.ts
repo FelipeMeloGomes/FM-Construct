@@ -1,16 +1,11 @@
 "use server"
 
 import { cookies, headers } from "next/headers"
-import { z } from "zod"
 import { createToken } from "@/lib/auth"
 import { checkRateLimit, recordAttempt } from "@/lib/rate-limit"
 import { logAudit } from "@/lib/audit"
+import { loginSchema } from "@/schemas/auth"
 import type { ActionResult } from "@/lib/actions/shared"
-
-const loginSchema = z.object({
-  username: z.string().min(1, "Campo obrigatório"),
-  password: z.string().min(1, "Campo obrigatório"),
-})
 
 export async function loginAction(formData: FormData): Promise<ActionResult> {
   const parsed = loginSchema.safeParse(Object.fromEntries(formData))

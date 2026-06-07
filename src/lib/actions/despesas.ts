@@ -1,20 +1,12 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { z } from "zod"
 import { getDb } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { logAudit } from "@/lib/audit"
+import { criarDespesaSchema } from "@/schemas/despesas"
+import { uuidSchema } from "@/schemas/_shared"
 import type { ActionResult } from "./shared"
-
-const criarDespesaSchema = z.object({
-  descricao: z.string().min(3, "Descrição deve ter no mínimo 3 caracteres"),
-  categoria: z.enum(["material", "alimentacao", "transporte", "ferramentas", "outros"]),
-  valor: z.coerce.number().positive("Valor deve ser positivo"),
-  data: z.string().min(1, "Selecione a data"),
-  pago_para: z.string().optional(),
-  observacao: z.string().optional(),
-})
 
 export async function criarDespesa(formData: FormData): Promise<ActionResult> {
   await requireAuth()
@@ -39,8 +31,6 @@ export async function criarDespesa(formData: FormData): Promise<ActionResult> {
   revalidatePath("/")
   return { success: true }
 }
-
-const uuidSchema = z.string().uuid()
 
 export async function deletarDespesa(id: string): Promise<ActionResult> {
   await requireAuth()

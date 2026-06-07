@@ -5,14 +5,9 @@ import { z } from "zod"
 import { getDb } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { logAudit } from "@/lib/audit"
+import { registrarDiaSchema, registrarPagamentoSchema, atualizarDiaSchema } from "@/schemas/dias"
+import { uuidSchema } from "@/schemas/_shared"
 import type { ActionResult } from "./shared"
-
-const registrarDiaSchema = z.object({
-  trabalhador_id: z.string().uuid(),
-  data: z.string().min(1, "Selecione a data"),
-  tipo: z.enum(["inteiro", "meio"]),
-  observacao: z.string().optional(),
-})
 
 export async function registrarDia(formData: FormData): Promise<ActionResult> {
   await requireAuth()
@@ -47,12 +42,6 @@ export async function registrarDia(formData: FormData): Promise<ActionResult> {
   return { success: true }
 }
 
-const registrarPagamentoSchema = z.object({
-  dia_id: z.string().uuid(),
-  valor_pago: z.coerce.number().positive("Valor pago deve ser positivo"),
-  data_pagamento: z.string().min(1, "Selecione a data do pagamento"),
-})
-
 export async function registrarPagamentoDia(formData: FormData): Promise<ActionResult> {
   await requireAuth()
   const parsed = registrarPagamentoSchema.safeParse(Object.fromEntries(formData))
@@ -75,14 +64,6 @@ export async function registrarPagamentoDia(formData: FormData): Promise<ActionR
   revalidatePath("/")
   return { success: true }
 }
-
-const atualizarDiaSchema = z.object({
-  id: z.string().uuid(),
-  data: z.string().min(1, "Selecione a data"),
-  tipo: z.enum(["inteiro", "meio"]),
-  valor_pago: z.coerce.number().positive("Valor pago deve ser positivo").optional(),
-  data_pagamento: z.string().optional(),
-})
 
 export async function atualizarDia(formData: FormData): Promise<ActionResult> {
   await requireAuth()
@@ -127,8 +108,6 @@ export async function atualizarDia(formData: FormData): Promise<ActionResult> {
   revalidatePath("/")
   return { success: true }
 }
-
-const uuidSchema = z.string().uuid()
 
 export async function pagarSemana(trabalhadorId: string, diaIds: string[]): Promise<ActionResult> {
   await requireAuth()

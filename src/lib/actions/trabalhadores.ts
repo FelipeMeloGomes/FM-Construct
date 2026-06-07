@@ -1,21 +1,16 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { z } from "zod"
 import { getDb } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { logAudit } from "@/lib/audit"
+import { criarTrabalhadorSchema } from "@/schemas/trabalhadores"
+import { uuidSchema } from "@/schemas/_shared"
 import type { ActionResult } from "./shared"
-
-const criarSchema = z.object({
-  nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
-  funcao: z.enum(["pedreiro", "servente"]),
-  valor_diaria: z.coerce.number().positive("Valor da diária deve ser positivo"),
-})
 
 export async function criarTrabalhador(formData: FormData): Promise<ActionResult> {
   await requireAuth()
-  const parsed = criarSchema.safeParse(Object.fromEntries(formData))
+  const parsed = criarTrabalhadorSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { success: false, error: "Verifique os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   const db = await getDb()
 
@@ -38,7 +33,7 @@ export async function atualizarTrabalhador(id: string, formData: FormData): Prom
   await requireAuth()
   const idOk = uuidSchema.safeParse(id)
   if (!idOk.success) return { success: false, error: "ID inválido" }
-  const parsed = criarSchema.safeParse(Object.fromEntries(formData))
+  const parsed = criarTrabalhadorSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { success: false, error: "Verifique os campos", fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   const db = await getDb()
 
@@ -58,8 +53,6 @@ export async function atualizarTrabalhador(id: string, formData: FormData): Prom
   revalidatePath("/")
   return { success: true }
 }
-
-const uuidSchema = z.string().uuid()
 
 export async function toggleAtivoTrabalhador(id: string, ativo: boolean): Promise<ActionResult> {
   await requireAuth()
