@@ -72,6 +72,7 @@ Sistema de gerenciamento de obra para pequenas construções — controle de ped
 | Export PNG | html-to-image |
 | Notificações | sonner |
 | Fontes | Sora (headings) + DM Sans (body) |
+| Documentação API | OpenAPI 3.0 + Swagger UI (gerado dos schemas Zod) |
 | Testes (unit) | Vitest + Testing Library (115 testes) |
 | Testes (E2E) | Playwright (57 testes — 11 specs) |
 | Lint | ESLint + eslint-plugin-vitest |
@@ -148,55 +149,41 @@ rate_limits
 ```
 src/
 ├── app/
+│   ├── (app)/                      # Route group: layout com Header
+│   │   ├── page.tsx                # Dashboard
+│   │   ├── layout.tsx              # Header + MobileNav + Toaster
+│   │   ├── login/
+│   │   ├── trabalhadores/
+│   │   ├── despesas/
+│   │   └── relatorios/
+│   ├── (docs)/                     # Route group: layout sem Header
+│   │   ├── layout.tsx              # Minimal (apenas children)
+│   │   └── docs/
+│   │       └── page.tsx            # Swagger UI
 │   ├── api/
-│   │   └── export/route.ts          # Geração PDF/TXT/CSV
-│   ├── despesas/
-│   │   ├── page.tsx                 # Lista de despesas
-│   │   ├── nova/page.tsx            # Nova despesa
-│   │   └── [id]/editar/page.tsx     # Editar despesa
-│   ├── relatorios/
-│   │   ├── page.tsx                 # Relatórios + filtro mês
-│   │   └── filtro-mes.tsx           # Select de meses
-│   ├── trabalhadores/
-│   │   ├── page.tsx                 # Lista de trabalhadores
-│   │   ├── novo/page.tsx            # Novo trabalhador
-│   │   ├── [id]/page.tsx            # Detalhe do trabalhador
-│   │   └── [id]/editar/page.tsx     # Editar trabalhador
-│   ├── page.tsx                     # Dashboard
-│   ├── layout.tsx                   # Layout root
-│   └── globals.css                  # Estilos globais + tema
-├── components/
-│   ├── dashboard/
-│   │   ├── charts.tsx               # Gráficos chart.js
-│   │   ├── dashboard-content.tsx    # Cards + resumo mensal
-│   │   └── monthly-export-card.tsx  # Export PNG do resumo
-│   ├── despesas/
-│   │   └── despesas-table.tsx       # Tabela client-side com busca/ordenação
-│   ├── layout/
-│   │   ├── header.tsx               # Nav desktop + theme toggle
-│   │   ├── mobile-nav.tsx           # Bottom nav mobile
-│   │   └── transition-link.tsx      # Link com view transition
-│   ├── theme/
-│   │   ├── theme-provider.tsx       # Context de tema
-│   │   └── theme-toggle.tsx         # Botão light/dark
-│   ├── trabalhadores/
-│   │   ├── registrar-dia-dialog.tsx
-│   │   ├── registrar-pagamento-dialog.tsx
-│   │   ├── editar-dia-dialog.tsx
-│   │   └── trabalhadores-table.tsx  # Tabela client-side com busca/ordenação
-│   └── ui/
-│       ├── bulk-delete-bar.tsx      # Barra de deleção em massa
-│       ├── confirm-dialog.tsx       # Diálogo de confirmação com toast
-│       └── pagination-bar.tsx       # Paginação compartilhada
+│   │   ├── docs/route.ts           # GET → OpenAPI spec JSON
+│   │   ├── export/route.ts         # GET → PDF/TXT/CSV
+│   │   └── csp-report/route.ts     # POST → CSP violation report
+│   ├── layout.tsx                  # Root layout (fonts, ThemeProvider)
+│   └── globals.css                 # Estilos globais + tema
+├── components/                     # (inalterado)
+├── schemas/                        # Schemas Zod centralizados
+│   ├── index.ts
+│   ├── _shared.ts                 # uuidSchema
+│   ├── auth.ts
+│   ├── trabalhadores.ts
+│   ├── dias.ts
+│   └── despesas.ts
 ├── lib/
 │   ├── auth.ts                     # HMAC-SHA256 auth + requireAuth
 │   ├── db.ts                       # Conexão Neon (lazy)
 │   ├── rate-limit.ts               # Rate limit (10 tentativas → bloqueio 15min)
 │   ├── utils.ts                    # formatCurrency, formatDate, cn
 │   ├── audit.ts                    # Audit log
+│   ├── openapi.ts                  # Gerador da spec OpenAPI
 │   ├── export/                     # Geradores de exportação
-│   └── actions/                    # Server Actions
-│       ├── auth.ts                 # loginAction + logoutAction
+│   └── actions/                    # Server Actions (importam schemas de @/schemas/)
+│       ├── shared.ts               # ActionResult type + parseError
 │       ├── trabalhadores.ts
 │       ├── dias.ts
 │       └── despesas.ts
@@ -238,6 +225,34 @@ Todas as mutações usam Server Actions com `"use server"` e `revalidatePath`:
 
 ---
 
+## Documentação da API
+
+A API é documentada automaticamente via **OpenAPI 3.0** + **Swagger UI**:
+
+### Acesso
+
+- **Swagger UI**: `http://localhost:3000/docs`
+- **Spec JSON**: `http://localhost:3000/api/docs`
+
+A spec é gerada dinamicamente a partir dos **schemas Zod** em `src/schemas/` e inclui:
+
+- **Server Actions** (16 operações — Auth, Trabalhadores, Dias, Despesas)
+- **Route Handlers** (`GET /api/export`, `POST /api/csp-report`)
+
+### Geração
+
+| Arquivo | Função |
+|---------|--------|
+| `src/schemas/` | Schemas Zod extraídos das actions |
+| `src/lib/openapi.ts` | `generateOpenApiSpec()` usando `@asteasolutions/zod-to-openapi` |
+| `src/app/api/docs/route.ts` | Rota que serve o JSON da spec |
+| `src/app/(docs)/docs/page.tsx` | Swagger UI carregado via jsDelivr |
+
+```bash
+# A spec reflete automaticamente os schemas — nenhuma manutenção manual
+```
+
+---
 ## UX & Interação
 
 - **Confirmação**: todas as ações destrutivas (excluir trabalhador, despesa, dia) passam por `ConfirmDialog` com toast de feedback via sonner
