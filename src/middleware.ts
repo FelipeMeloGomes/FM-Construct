@@ -13,7 +13,7 @@ export default async function proxy(request: NextRequest) {
     `font-src 'self' data:`,
     `connect-src 'self' https://vercel.live`,
     `frame-ancestors 'none'`,
-    `report-uri /api/csp-report`,
+    `report-to csp-endpoint`,
     `base-uri 'self'`,
     `form-action 'self'`,
     `object-src 'none'`,
@@ -23,6 +23,10 @@ export default async function proxy(request: NextRequest) {
   function htmlResponse() {
     const res = NextResponse.next()
     res.headers.set("Content-Security-Policy", csp)
+    res.headers.set(
+      "Report-To",
+      '{"group":"csp-endpoint","max_age":10886400,"endpoints":[{"url":"/api/csp-report"}]}'
+    )
     return res
   }
 
