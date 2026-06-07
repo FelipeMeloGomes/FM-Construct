@@ -12,7 +12,7 @@ export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const rawRedirect = searchParams.get("redirect")
-  const redirectTo = rawRedirect && /^\/(?!\/)/.test(rawRedirect) ? rawRedirect : "/"
+  const redirectTo = rawRedirect?.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/"
   const [showPassword, setShowPassword] = useState(false)
   const [serverError, setServerError] = useState("")
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | undefined>()
