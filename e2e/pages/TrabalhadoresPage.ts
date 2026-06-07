@@ -55,11 +55,23 @@ export class TrabalhadoresPage {
     await this.page.getByRole("button", { name: "Sim, excluir" }).click()
   }
 
-  async getMensagemVazia() {
+  getMensagemVazia() {
     return this.page.getByText("Nenhum trabalhador cadastrado")
   }
 
   async buscar(termo: string) {
     await this.page.getByPlaceholder("Buscar por nome ou função...").fill(termo)
+  }
+
+  async limparBusca() {
+    await this.page.getByRole("button", { name: "Limpar busca" }).click()
+  }
+
+  async ordenarPor(coluna: string) {
+    await this.page.locator("th.cursor-pointer").filter({ hasText: coluna }).click()
+  }
+
+  async getNomePrimeiraLinha(): Promise<string> {
+    return await this.page.locator("tbody tr").first().locator("td").nth(1).innerText()
   }
 }

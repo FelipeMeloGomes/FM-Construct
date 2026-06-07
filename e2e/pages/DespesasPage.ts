@@ -68,11 +68,23 @@ export class DespesasPage {
     await this.page.getByRole("button", { name: /Excluir selecionados/ }).click()
   }
 
-  async getMensagemVazia() {
+  getMensagemVazia() {
     return this.page.getByText("Nenhuma despesa registrada")
   }
 
   async buscar(termo: string) {
     await this.page.getByPlaceholder("Buscar por descrição ou favorecido...").fill(termo)
+  }
+
+  async limparBusca() {
+    await this.page.getByRole("button", { name: "Limpar busca" }).click()
+  }
+
+  async ordenarPor(coluna: string) {
+    await this.page.locator("th.cursor-pointer").filter({ hasText: coluna }).click()
+  }
+
+  async getDescricaoPrimeiraLinha(): Promise<string> {
+    return await this.page.locator("tbody tr").first().locator("td").nth(2).innerText()
   }
 }
