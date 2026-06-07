@@ -52,17 +52,17 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
 
   cookieStore.set("fm_auth", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.SESSION_COOKIE_SECURE !== "false",
     sameSite: "lax",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 7 * 24 * 60 * 60,
     path: "/",
   })
 
   cookieStore.set("fm_sub", sub, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.SESSION_COOKIE_SECURE !== "false",
     sameSite: "lax",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 7 * 24 * 60 * 60,
     path: "/",
   })
 
@@ -72,8 +72,8 @@ export async function loginAction(formData: FormData): Promise<ActionResult> {
 
 export async function logoutAction(): Promise<ActionResult> {
   const cookieStore = await cookies()
-  cookieStore.set("fm_auth", "", { httpOnly: true, maxAge: 0, path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production" })
-  cookieStore.set("fm_sub", "", { httpOnly: true, maxAge: 0, path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production" })
+  cookieStore.set("fm_auth", "", { httpOnly: true, maxAge: 0, path: "/", sameSite: "lax", secure: process.env.SESSION_COOKIE_SECURE !== "false" })
+  cookieStore.set("fm_sub", "", { httpOnly: true, maxAge: 0, path: "/", sameSite: "lax", secure: process.env.SESSION_COOKIE_SECURE !== "false" })
   logAudit("logout")
   return { success: true }
 }

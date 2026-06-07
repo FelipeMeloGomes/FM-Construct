@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import type { NextRequest } from "next/server"
 
 const COOKIE_NAME = "fm_auth"
-const COOKIE_MAX_AGE = 30 * 24 * 60 * 60
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60
 
 const encoder = new TextEncoder()
 
