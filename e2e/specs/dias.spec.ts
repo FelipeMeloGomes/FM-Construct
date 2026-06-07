@@ -87,6 +87,10 @@ test.describe("Dias Trabalhados", () => {
 
     await detailPage.editarDia(hoje, "meio")
     await detailPage.aguardarDiaRegistrado(hoje)
+
+    const hojeBR = hoje.split("-").reverse().join("/")
+    const tipoCell = page.getByRole("row").filter({ hasText: hojeBR }).getByRole("cell").nth(1)
+    await expect(tipoCell).toHaveText("Meio-Dia")
   })
 
   test("deve excluir um dia registrado", async ({ page }) => {
@@ -118,11 +122,11 @@ test.describe("Dias Trabalhados", () => {
     await detailPage.registrarDia(hoje, "inteiro")
     await detailPage.aguardarDiaRegistrado(hoje)
 
+    const hojeBR = hoje.split("-").reverse().join("/")
     await detailPage.pagarDia(hoje)
-    await detailPage.aguardarDiaRegistrado(hoje)
 
-    const status = await detailPage.getStatusText(hoje)
-    expect(status).toBe("Pago")
+    const statusCell = page.getByRole("row").filter({ hasText: hojeBR }).getByRole("cell").nth(3)
+    await expect(statusCell).toHaveText("Pago")
   })
 
   test("deve pagar uma semana completa", async ({ page }) => {
@@ -140,7 +144,10 @@ test.describe("Dias Trabalhados", () => {
     await detailPage.aguardarDiaRegistrado(hoje)
 
     if (!sameWeek(hoje, amanha)) {
-      test.skip()
+      await detailPage.pagarDia(hoje)
+      const hojeBR = hoje.split("-").reverse().join("/")
+      const statusCell = page.getByRole("row").filter({ hasText: hojeBR }).getByRole("cell").nth(3)
+      await expect(statusCell).toHaveText("Pago")
       return
     }
 
@@ -148,6 +155,8 @@ test.describe("Dias Trabalhados", () => {
     await detailPage.aguardarDiaRegistrado(amanha)
 
     await detailPage.pagarSemana()
+    await page.reload()
+    await page.waitForLoadState("networkidle")
 
     const status1 = await detailPage.getStatusText(hoje)
     const status2 = await detailPage.getStatusText(amanha)

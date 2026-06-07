@@ -25,10 +25,13 @@ test.describe("Rate Limiting", () => {
   })
 
   test("deve bloquear após múltiplas tentativas inválidas consecutivas", async ({ page }) => {
+    test.setTimeout(180_000)
+
     for (let i = 0; i < 11; i++) {
       await page.locator("#username").fill("admin")
       await page.locator("#password").fill(`wrong_${i}`)
       await page.getByRole("button", { name: "Entrar" }).click()
+      await page.waitForTimeout(500)
     }
 
     await expect(page.getByText("Muitas tentativas")).toBeVisible()

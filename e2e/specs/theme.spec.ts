@@ -16,21 +16,20 @@ test.describe("Theme Toggle", () => {
 
     const initialAriaLabel = await toggle.getAttribute("aria-label")
     if (initialAriaLabel === "Ativar modo escuro") {
-      await expect(page.locator("html")).toHaveAttribute("class", /dark/)
-    } else {
       await expect(page.locator("html")).not.toHaveAttribute("class", /dark/)
+    } else {
+      await expect(page.locator("html")).toHaveAttribute("class", /dark/)
     }
 
     await toggle.click()
-    await page.waitForTimeout(500)
+
+    await expect(toggle).toHaveAttribute("aria-label", initialAriaLabel === "Ativar modo escuro" ? "Ativar modo claro" : "Ativar modo escuro")
 
     const afterClickLabel = await toggle.getAttribute("aria-label")
-    expect(afterClickLabel).not.toBe(initialAriaLabel)
-
     if (afterClickLabel === "Ativar modo escuro") {
-      await expect(page.locator("html")).toHaveAttribute("class", /dark/)
-    } else {
       await expect(page.locator("html")).not.toHaveAttribute("class", /dark/)
+    } else {
+      await expect(page.locator("html")).toHaveAttribute("class", /dark/)
     }
   })
 
@@ -39,7 +38,8 @@ test.describe("Theme Toggle", () => {
     const initialLabel = await toggle.getAttribute("aria-label")
 
     await toggle.click()
-    await page.waitForTimeout(500)
+
+    await expect(toggle).toHaveAttribute("aria-label", initialLabel === "Ativar modo escuro" ? "Ativar modo claro" : "Ativar modo escuro")
 
     await page.getByRole("link", { name: "Despesas" }).click()
     await page.waitForURL("/despesas")

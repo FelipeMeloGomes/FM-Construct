@@ -1,4 +1,4 @@
-import type { Page, Locator } from "@playwright/test"
+import { expect, type Page, type Locator } from "@playwright/test"
 
 function formatDateBR(dateStr: string): string {
   const [y, m, d] = dateStr.split("-")
@@ -50,13 +50,14 @@ export class TrabalhadorDetailPage {
       await this.page.locator("#valor_pago").fill(valor)
     }
     await this.page.getByRole("button", { name: "Confirmar Pagamento" }).click()
-    await this.page.waitForTimeout(500)
+    await expect(this.page.getByRole("button", { name: "Confirmar Pagamento" })).not.toBeVisible({ timeout: 5000 })
   }
 
   async pagarSemana() {
     await this.page.getByRole("button", { name: /Pagar Semana/ }).click()
     await this.page.getByRole("button", { name: "Sim, pagar" }).click()
-    await this.page.waitForTimeout(1000)
+    await expect(this.page.getByRole("button", { name: "Sim, pagar" })).not.toBeVisible({ timeout: 5000 })
+    await this.page.waitForLoadState("networkidle")
   }
 
   private getDayRow(dataBR: string): Locator {

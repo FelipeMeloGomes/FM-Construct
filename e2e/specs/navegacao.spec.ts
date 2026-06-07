@@ -54,7 +54,19 @@ test.describe("Navegação", () => {
   })
 
   test("deve navegar pelo breadcrumb de voltar no detalhe do trabalhador", async ({ page }) => {
-    await page.goto("/trabalhadores")
+    const nome = `Breadcrumb ${Date.now()}`
+    const trabalhadoresPage = (await import("../pages/TrabalhadoresPage")).TrabalhadoresPage
+    const tp = new trabalhadoresPage(page)
+    await tp.criarTrabalhador(nome, "Pedreiro", "200.00")
+    await page.waitForURL("/trabalhadores")
+
+    await page.getByRole("link", { name: nome, exact: true }).click()
+    await page.waitForURL(/\/trabalhadores\//)
+
+    const breadcrumb = page.getByRole("link", { name: "Trabalhadores" }).or(page.getByText("Trabalhadores").first())
+    await expect(breadcrumb.first()).toBeVisible()
+
+    await breadcrumb.first().click()
     await page.waitForURL("/trabalhadores")
     await expect(page.getByRole("heading", { name: "Trabalhadores" })).toBeVisible()
   })
