@@ -72,7 +72,8 @@ Sistema de gerenciamento de obra para pequenas construções — controle de ped
 | Export PNG | html-to-image |
 | Notificações | sonner |
 | Fontes | Sora (headings) + DM Sans (body) |
-| Testes | Vitest + Testing Library (43 testes) |
+| Testes (unit) | Vitest + Testing Library (115 testes) |
+| Testes (E2E) | Playwright (57 testes — 11 specs) |
 | Lint | ESLint + eslint-plugin-vitest |
 | Package Manager | pnpm 10 |
 | CI/CD | GitHub Actions (lint → test → build → deploy) |
@@ -298,7 +299,8 @@ Crie uma **Child Branch** no Neon a partir da Main — assim dev e produção us
 
 ```bash
 pnpm lint        # ESLint
-pnpm test        # Vitest (43 testes)
+pnpm test        # Vitest (115 testes)
+pnpm test:e2e    # Playwright (57 testes, requer banco real)
 pnpm build       # TypeScript + build otimizado
 pnpm dev         # Servidor de desenvolvimento (Turbopack)
 ```
