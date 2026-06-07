@@ -8,6 +8,10 @@ const BLOCK_DURATION_MS = 15 * 60 * 1000
 const RESET_AFTER_MS = 30 * 60 * 1000
 
 export async function checkRateLimit(ip: string): Promise<{ allowed: boolean; delay: number }> {
+  if (process.env.NODE_ENV === "development" && ip === "127.0.0.1") {
+    console.warn("⚠ Rate-limit IP coming from localhost — ensure a reverse proxy sets x-forwarded-for in production")
+  }
+
   const db = await getDb()
   const rows = await db`SELECT attempt_count, blocked_until FROM rate_limits WHERE ip = ${ip}`
   const row = rows[0] as { attempt_count: number; blocked_until: Date | null } | undefined
