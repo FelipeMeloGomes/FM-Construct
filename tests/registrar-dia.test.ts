@@ -21,7 +21,10 @@ vi.mock("@/lib/db", async () => {
   const { sqlTagMock, DbError } = await import("../tests/test-utils")
   return {
     getDb: vi.fn(async () => sqlTagMock({
-      "SELECT * FROM dias_trabalhados": () => mocks.selectAll(),
+      "SELECT * FROM dias_trabalhados": () => {
+        if (state.dbGenericError) throw new DbError("connection error", "08001")
+        return mocks.selectAll()
+      },
       "SELECT valor_diaria, nome FROM trabalhadores": () => {
         if (state.trabalhadorNotFound) return []
         return [{ valor_diaria: 200, nome: "João" }]
@@ -43,7 +46,10 @@ vi.mock("@/lib/db", async () => {
         if (state.dbGenericError) throw new DbError("connection error", "08001")
         return mocks.update()
       },
-      "DELETE FROM dias_trabalhados WHERE id = $": () => mocks.deleteOne(),
+      "DELETE FROM dias_trabalhados WHERE id = $": () => {
+        if (state.dbGenericError) throw new DbError("connection error", "08001")
+        return mocks.deleteOne()
+      },
     })),
   }
 })
@@ -158,7 +164,6 @@ describe("registrarDia", () => {
     assertIsError(result)
 
     expect(result.error).toBe("Erro ao salvar no banco de dados")
-    expect(logAudit).not.toHaveBeenCalled()
     expect(logAudit).not.toHaveBeenCalled()
   })
 })
@@ -277,6 +282,16 @@ describe("pagarSemana", () => {
     expect(mocks.update).toHaveBeenCalledOnce()
     expect(logAudit).toHaveBeenCalledWith("pagar_semana", "Trabalhador: 550e8400-e29b-41d4-a716-446655440000, Dias: 0")
   })
+
+  it("retorna erro genérico quando banco de dados falha no pagamento da semana", async () => {
+    state.dbGenericError = true
+
+    const result = await pagarSemana(trabalhadorId, ["550e8400-e29b-41d4-a716-446655440000"])
+    assertIsError(result)
+
+    expect(result.error).toBe("Erro ao salvar no banco de dados")
+    expect(logAudit).not.toHaveBeenCalled()
+  })
 })
 
 describe("deletarDia", () => {
@@ -319,6 +334,16 @@ describe("deletarDia", () => {
 
     expect(result.error).toBe("ID inválido")
     expect(mocks.deleteOne).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
+  })
+
+  it("retorna erro genérico quando banco de dados falha ao deletar", async () => {
+    state.dbGenericError = true
+
+    const result = await deletarDia("550e8400-e29b-41d4-a716-446655440000")
+    assertIsError(result)
+
+    expect(result.error).toBe("Erro ao salvar no banco de dados")
     expect(logAudit).not.toHaveBeenCalled()
   })
 })
@@ -419,5 +444,11 @@ describe("listarDias", () => {
     vi.mocked(requireAuth).mockRejectedValueOnce(new Error("NEXT_REDIRECT"))
 
     await expect(listarDias(trabalhadorId)).rejects.toThrow("NEXT_REDIRECT")
+  })
+
+  it("propaga erro quando banco de dados falha", async () => {
+    state.dbGenericError = true
+
+    await expect(listarDias(trabalhadorId)).rejects.toThrow()
   })
 })

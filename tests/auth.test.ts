@@ -31,4 +31,35 @@ describe("createToken e verifyToken", () => {
     const result = await verifyToken("parte-unica")
     expect(result.valid).toBe(false)
   })
+
+  it("rejeita token expirado", async () => {
+    const exp = Math.floor(Date.now() / 1000) - 1
+    const sub = crypto.randomUUID()
+    const payload = JSON.stringify({ sub, exp })
+    const data = btoa(payload).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(process.env.AUTH_SECRET) as BufferSource,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    )
+    const sigBytes = await crypto.subtle.sign("HMAC", cryptoKey, new TextEncoder().encode(data) as BufferSource)
+    const sig = btoa(String.fromCharCode(...new Uint8Array(sigBytes)))
+      .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
+    const expiredToken = `${data}.${sig}`
+
+    const result = await verifyToken(expiredToken)
+    expect(result.valid).toBe(false)
+  })
+
+  it("rejeita token criado com outro segredo", async () => {
+    const origSecret = process.env.AUTH_SECRET
+    process.env.AUTH_SECRET = "other-secret-32-chars-minimum!!!"
+    const { token } = await createToken()
+    process.env.AUTH_SECRET = origSecret
+
+    const result = await verifyToken(token)
+    expect(result.valid).toBe(false)
+  })
 })

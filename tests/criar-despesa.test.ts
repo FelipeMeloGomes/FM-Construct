@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { assertIsError, makeFormData } from "../tests/test-utils"
+import { assertIsError, makeFormData, DbError } from "../tests/test-utils"
 
-const { mocks } = vi.hoisted(() => ({
+const { mocks, state } = vi.hoisted(() => ({
   mocks: {
     insert: vi.fn(),
     update: vi.fn(),
@@ -9,17 +9,39 @@ const { mocks } = vi.hoisted(() => ({
     deleteMany: vi.fn(),
     selectAll: vi.fn(),
   },
+  state: {
+    dbGenericError: false,
+    shouldThrowDuplicate: false,
+  },
 }))
+
+function resetState() {
+  state.dbGenericError = false
+  state.shouldThrowDuplicate = false
+}
 
 vi.mock("@/lib/db", async () => {
   const { sqlTagMock } = await import("../tests/test-utils")
   return {
     getDb: vi.fn(async () => sqlTagMock({
       "SELECT * FROM despesas ORDER BY": () => mocks.selectAll(),
-      "INSERT INTO despesas": () => mocks.insert(),
-      "UPDATE despesas": () => mocks.update(),
-      "DELETE FROM despesas WHERE id = $": () => mocks.deleteOne(),
-      "ANY($": () => mocks.deleteMany(),
+      "INSERT INTO despesas": () => {
+        if (state.shouldThrowDuplicate) throw new DbError("duplicate key", "23505")
+        if (state.dbGenericError) throw new DbError("connection error", "08001")
+        return mocks.insert()
+      },
+      "UPDATE despesas": () => {
+        if (state.dbGenericError) throw new DbError("connection error", "08001")
+        return mocks.update()
+      },
+      "DELETE FROM despesas WHERE id = $": () => {
+        if (state.dbGenericError) throw new DbError("connection error", "08001")
+        return mocks.deleteOne()
+      },
+      "ANY($": () => {
+        if (state.dbGenericError) throw new DbError("connection error", "08001")
+        return mocks.deleteMany()
+      },
     })),
   }
 })
@@ -45,6 +67,7 @@ const defaults = { descricao: "Cimento 50kg", categoria: "material", valor: "85.
 describe("criarDespesa", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    resetState()
   })
 
   it("cria despesa com dados válidos", async () => {
@@ -103,6 +126,26 @@ describe("criarDespesa", () => {
     expect(mocks.insert).not.toHaveBeenCalled()
     expect(logAudit).not.toHaveBeenCalled()
   })
+
+  it("retorna erro genérico quando banco de dados falha", async () => {
+    state.dbGenericError = true
+
+    const result = await criarDespesa(makeFormData(defaults))
+    assertIsError(result)
+
+    expect(result.error).toBe("Erro ao salvar no banco de dados")
+    expect(logAudit).not.toHaveBeenCalled()
+  })
+
+  it("retorna erro amigável para despesa duplicada (código 23505)", async () => {
+    state.shouldThrowDuplicate = true
+
+    const result = await criarDespesa(makeFormData(defaults))
+    assertIsError(result)
+
+    expect(result.error).toContain("duplicada")
+    expect(logAudit).not.toHaveBeenCalled()
+  })
 })
 
 describe("atualizarDespesa", () => {
@@ -110,6 +153,7 @@ describe("atualizarDespesa", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    resetState()
   })
 
   it("atualiza despesa com dados válidos", async () => {
@@ -138,11 +182,31 @@ describe("atualizarDespesa", () => {
     expect(mocks.update).not.toHaveBeenCalled()
     expect(logAudit).not.toHaveBeenCalled()
   })
+
+  it("retorna erro para ID inválido", async () => {
+    const result = await atualizarDespesa("invalido", makeFormData(defaults))
+    assertIsError(result)
+
+    expect(result.error).toBe("ID inválido")
+    expect(mocks.update).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
+  })
+
+  it("retorna erro genérico quando banco de dados falha", async () => {
+    state.dbGenericError = true
+
+    const result = await atualizarDespesa(id, makeFormData(defaults))
+    assertIsError(result)
+
+    expect(result.error).toBe("Erro ao salvar no banco de dados")
+    expect(logAudit).not.toHaveBeenCalled()
+  })
 })
 
 describe("deletarDespesa", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    resetState()
   })
 
   it("deleta despesa com sucesso", async () => {
@@ -170,11 +234,22 @@ describe("deletarDespesa", () => {
     expect(mocks.deleteOne).not.toHaveBeenCalled()
     expect(logAudit).not.toHaveBeenCalled()
   })
+
+  it("retorna erro genérico quando banco de dados falha", async () => {
+    state.dbGenericError = true
+
+    const result = await deletarDespesa("550e8400-e29b-41d4-a716-446655440000")
+    assertIsError(result)
+
+    expect(result.error).toBe("Erro ao salvar no banco de dados")
+    expect(logAudit).not.toHaveBeenCalled()
+  })
 })
 
 describe("deletarDespesas", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    resetState()
   })
 
   it("deleta múltiplas despesas com sucesso", async () => {
@@ -200,6 +275,16 @@ describe("deletarDespesas", () => {
 
     expect(result.error).toBe("Nenhuma despesa selecionada")
     expect(mocks.deleteMany).not.toHaveBeenCalled()
+    expect(logAudit).not.toHaveBeenCalled()
+  })
+
+  it("retorna erro genérico quando banco de dados falha", async () => {
+    state.dbGenericError = true
+
+    const result = await deletarDespesas(["550e8400-e29b-41d4-a716-446655440000"])
+    assertIsError(result)
+
+    expect(result.error).toBe("Erro ao salvar no banco de dados")
     expect(logAudit).not.toHaveBeenCalled()
   })
 })
