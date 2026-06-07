@@ -7,8 +7,8 @@ export default async function proxy(request: NextRequest) {
 
   const csp = [
     `default-src 'self'`,
-    `script-src 'self' 'unsafe-inline' https://vercel.live${isDev ? " 'unsafe-eval'" : ""}`,
-    `style-src 'self' 'unsafe-inline'`,
+    `script-src 'self' 'unsafe-inline' https://vercel.live https://cdn.jsdelivr.net${isDev ? " 'unsafe-eval'" : ""}`,
+    `style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net`,
     `img-src 'self' data: blob:`,
     `font-src 'self' data:`,
     `connect-src 'self' https://vercel.live`,
@@ -38,7 +38,7 @@ export default async function proxy(request: NextRequest) {
     return htmlResponse()
   }
 
-  if (pathname === "/theme-init.js" || pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname.startsWith("/api/csp-report")) {
+  if (pathname === "/theme-init.js" || pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname.startsWith("/api/csp-report") || pathname === "/api/docs" || pathname === "/docs") {
     return htmlResponse()
   }
 
